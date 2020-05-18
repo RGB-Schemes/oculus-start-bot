@@ -17,6 +17,10 @@ ROLE_VALUE = os.getenv('ROLE_VALUE')
 bot = commands.Bot(command_prefix='!')
 existingVerifications = SqliteDict('./my_db.sqlite', autocommit=True)
 
+@bot.command(name='finishmygameforme')
+async def finishmygameforme(ctx):
+    await ctx.send("Don't tell me what to do!")
+
 @bot.command(name='verify', help='Verifies your Discord username against your Oculus Forum profile.')
 async def verify(ctx, forumUsername: str):
     addr = "https://forums.oculusvr.com/start/profile/{0}".format(forumUsername)
@@ -24,8 +28,10 @@ async def verify(ctx, forumUsername: str):
     startParser = OculusStartValidator(forumUsername)
     startParser.feed(requests.get(addr).text)
 
-    response = ""
-    if str(ctx.author) not in existingVerifications:
+    embed = discord.Embed(title="Oculus Start Verification for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63), url=addr)
+    embed.set_thumbnail(url=startParser.forumPicture)
+
+    if forumUsername not in existingVerifications:
         if startParser.isOculusStartMember:
             if str(startParser.discordUsername) == str(ctx.author):
                 """
@@ -33,16 +39,19 @@ async def verify(ctx, forumUsername: str):
                 role = utils.get(ctx.guild.roles, name=ROLE_VALUE)
                 await ctx.message.author.add_roles(role)
                 """
-                existingVerifications[str(ctx.author)] = startParser.discordUsername
-                response = "Confirmed that {0} is a member of Oculus Start! Assigning the role of {1}! If this does not work, please reach out to the moderators.".format(startParser.discordUsername, ROLE_VALUE)
+                existingVerifications[forumUsername] = str(ctx.author)
+                embed.add_field(name=":white_check_mark:", value="Confirmed that {0} is a member of Oculus Start! Assigning the role of {1}! If this does not work, please reach out to the moderators.".format(startParser.discordUsername, ROLE_VALUE))
             else:
-                response = "Confirmed that {0} is a member of Oculus Start but their Discord username wasn't {1}!".format(forumUsername, ctx.author)
+                if startParser.discordUsername == None:
+                    embed.add_field(name=":x:", value="Couldn't a comment from {0} with a Discord handle! Please comment on [your profile]({1}) with the exact Discord handle (case sensative).".format(forumUsername, addr))
+                else:
+                    embed.add_field(name=":x:", value="Confirmed that {0} is a member of Oculus Start but their Discord username was {2}, not {1}!".format(forumUsername, ctx.author, startParser.discordUsername))
         else:
-            response = "{0} is NOT a member of Oculus Start!".format(forumUsername)
+            embed.add_field(name=":x:", value="{0} is NOT a member of Oculus Start!".format(forumUsername))
     else:
-        response = "{0} has already verified {1} as their Discord username! Please contact a moderator if this is incorrect!".format(forumUsername, str(ctx.author))
-    print(response)
-    await ctx.send(response)
+        embed.add_field(name=":x:", value="{0} has already verified {1} as their Discord username! Please contact a moderator if this is incorrect!".format(forumUsername, existingVerifications[forumUsername]))
+
+    await ctx.send(content="", embed=embed)
 
 bot.run(TOKEN)
 print("Closing bot...")

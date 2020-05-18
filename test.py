@@ -10,6 +10,7 @@ if len(sys.argv) >= 2:
         startParser = OculusStartValidator(name)
         startParser.feed(requests.get(addr).text)
 
+        print("Forum picture: {0}".format(startParser.forumPicture))
         if startParser.isOculusStartMember:
             if startParser.discordUsername is not None:
                 print("Confirmed that {0} is a member of Oculus Start!".format(startParser.discordUsername))

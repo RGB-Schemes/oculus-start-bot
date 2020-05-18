@@ -2,16 +2,19 @@ import re
 from html.parser import HTMLParser
 
 class OculusStartValidator(HTMLParser):
-    pattern = re.compile("^[a-zA-z ]{2,32}#[0-9]{4}$")
+    pattern = re.compile("^[a-zA-z ']{2,32}#[0-9]{4}$")
 
     # Used to find if the user is an Oculus Start member.
     inRankSpan = False
 
+    tempImg = None
+    isInForumPicture = False
     commentAuthorVerified = False
     isInCommentDiv = False
     isInCommentAuthorDiv = False
     isInCommentTextDiv = False
 
+    forumPicture = None
     forumUsername = None
     discordUsername = None
     isOculusStartMember = False
@@ -26,6 +29,18 @@ class OculusStartValidator(HTMLParser):
                 if x == "class" and y == "Rank":
                     self.inRankSpan = True
                     break
+        if tag == "img":
+            for x, y in attrs:
+                if x == "src":
+                    if self.isInForumPicture:
+                        self.forumPicture = y
+                    else:
+                        self.tempImg = y
+                if x == "class" and y == "ProfilePhotoLarge":
+                    if self.tempImg != None:
+                        self.forumPicture = self.tempImg
+                    else:
+                        self.isInForumPicture = True
         if tag == "div":
             for x, y in attrs:
                 if x == "class":
@@ -38,6 +53,8 @@ class OculusStartValidator(HTMLParser):
                     break
 
     def handle_endtag(self, tag):
+        if self.isInForumPicture and tag == "img":
+            isInForumPicture = False
         if self.inRankSpan and tag == "span":
             self.inRankSpan = False
         if self.isInCommentDiv and tag == "div":
@@ -62,6 +79,6 @@ class OculusStartValidator(HTMLParser):
                 else:
                     self.isInCommentAuthorDiv = False
             elif self.isInCommentTextDiv and self.commentAuthorVerified:
-                print("Comment: {0}".format(data.strip()))
+                print("Username Found: {0}".format(data.strip()))
                 if self.pattern.match(data.strip()):
                     self.discordUsername = data.strip()
