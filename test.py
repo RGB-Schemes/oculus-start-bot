@@ -11,13 +11,16 @@ if len(sys.argv) >= 2:
         startParser.feed(requests.get(addr).text)
 
         print("Forum picture: {0}".format(startParser.forumPicture))
-        if startParser.isOculusStartMember:
+        if startParser.exists and startParser.isOculusStartMember:
             if startParser.discordUsername is not None:
                 print("Confirmed that {0} is a member of Oculus Start!".format(startParser.discordUsername))
             else:
                 print("Confirmed that {0} is a member of Oculus Start but couldn't find their Discord username!".format(name))
                 print("Found Discord name {0}".format(startParser.discordUsername))
         else:
-            print("{0} is NOT a member of Oculus Start!".format(name))
+            if startParser.exists == False:
+                print("{0} is not a valid Oculus username!".format(name))
+            else:
+                print("{0} is NOT a member of Oculus Start!".format(name))
 else:
     print("Please add any users as input parameters.")

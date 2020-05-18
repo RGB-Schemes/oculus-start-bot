@@ -14,6 +14,7 @@ class OculusStartValidator(HTMLParser):
     isInCommentAuthorDiv = False
     isInCommentTextDiv = False
 
+    exists = False
     forumPicture = None
     forumUsername = None
     discordUsername = None
@@ -46,6 +47,8 @@ class OculusStartValidator(HTMLParser):
         if tag == "div":
             for x, y in attrs:
                 if x == "class":
+                    if y == "User":
+                        self.exists = True
                     if y == "ItemContent Activity":
                         self.isInCommentDiv = True
                     elif y == "Title":
