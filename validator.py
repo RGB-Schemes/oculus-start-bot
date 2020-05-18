@@ -36,6 +36,8 @@ class OculusStartValidator(HTMLParser):
                         self.forumPicture = y
                     else:
                         self.tempImg = y
+                    if self.tempImg.startswith("//"):
+                        self.tempImg = "https:{0}".format(self.tempImg)
                 if x == "class" and y == "ProfilePhotoLarge":
                     if self.tempImg != None:
                         self.forumPicture = self.tempImg
@@ -54,7 +56,7 @@ class OculusStartValidator(HTMLParser):
 
     def handle_endtag(self, tag):
         if self.isInForumPicture and tag == "img":
-            isInForumPicture = False
+            self.isInForumPicture = False
         if self.inRankSpan and tag == "span":
             self.inRankSpan = False
         if self.isInCommentDiv and tag == "div":
