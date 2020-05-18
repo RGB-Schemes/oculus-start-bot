@@ -1,4 +1,3 @@
-import re
 import os
 import sys
 import requests
@@ -6,72 +5,8 @@ import discord
 from discord import utils
 from discord.ext import commands
 from dotenv import load_dotenv
-from html.parser import HTMLParser
 from sqlitedict import SqliteDict
-
-class OculusStartValidator(HTMLParser):
-    pattern = re.compile("^[a-zA-z]{2,32}#[0-9]{4}$")
-
-    # Used to find if the user is an Oculus Start member.
-    inRankSpan = False
-
-    commentAuthorVerified = False
-    isInCommentDiv = False
-    isInCommentAuthorDiv = False
-    isInCommentTextDiv = False
-
-    forumUsername = None
-    discordUsername = None
-    isOculusStartMember = False
-
-    def __init__(self, forumUsername):
-        HTMLParser.__init__(self)
-        self.forumUsername = forumUsername
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "span":
-            for x, y in attrs:
-                if x == "class" and y == "Rank":
-                    self.inRankSpan = True
-                    break
-        if tag == "div":
-            for x, y in attrs:
-                if x == "class":
-                    if y == "ItemContent Activity":
-                        self.isInCommentDiv = True
-                    elif y == "Title":
-                        self.isInCommentAuthorDiv = True
-                    elif y == "Excerpt userContent":
-                        self.isInCommentTextDiv = True
-                    break
-
-    def handle_endtag(self, tag):
-        if self.inRankSpan and tag == "span":
-            self.inRankSpan = False
-        if self.isInCommentDiv and tag == "div":
-            if self.isInCommentAuthorDiv:
-                self.isInCommentAuthorDiv = False
-            elif self.isInCommentTextDiv:
-                self.isInCommentTextDiv = False
-            else:
-                self.commentAuthorVerified = False
-                self.isInCommentDiv = False
-
-    def handle_data(self, data):
-        if self.inRankSpan:
-            if data.strip() == "Oculus Start Member":
-                self.isOculusStartMember = True
-            else:
-                self.isOculusStartMember = False
-        if self.isInCommentDiv:
-            if self.isInCommentAuthorDiv:
-                if str(data).lower() == self.forumUsername.lower():
-                    self.commentAuthorVerified = True
-                else:
-                    self.isInCommentAuthorDiv = False
-            elif self.isInCommentTextDiv and self.commentAuthorVerified:
-                if self.pattern.match(data.strip()):
-                    self.discordUsername = data.strip()
+from validator import OculusStartValidator
 
 # Start of the actual bot here.
 print("Starting bot with DiscordPY version {0}...".format(discord.__version__))
@@ -113,23 +48,3 @@ bot.run(TOKEN)
 print("Closing bot...")
 existingVerifications.close()
 print("Done!")
-
-"""
-if len(sys.argv) >= 2:
-    for i in range(1, len(sys.argv)):
-        name = sys.argv[i]
-        addr = "https://forums.oculusvr.com/start/profile/{0}".format(name)
-        # print("Fetching for {0} at {1}".format(name, addr))
-        startParser = OculusStartValidator()
-        startParser.feed(requests.get(addr).text)
-
-        if startParser.isOculusStartMember:
-            if startParser.discordUsername is not None:
-                print("Confirmed that {0} is a member of Oculus Start!".format(startParser.discordUsername))
-            else:
-                print("Confirmed that {0} is a member of Oculus Start but couldn't find their Discord username!".format(name))
-        else:
-            print("{0} is NOT a member of Oculus Start!".format(name))
-else:
-    print("Please add any users as input parameters.")
-"""
