@@ -15,8 +15,7 @@ if len(sys.argv) >= 2:
             if startParser.discordUsername is not None:
                 print("Confirmed that {0} is a member of Oculus Start!".format(startParser.discordUsername))
             else:
-                print("Confirmed that {0} is a member of Oculus Start but couldn't find their Discord username!".format(name))
-                print("Found Discord name {0}".format(startParser.discordUsername))
+                print("Confirmed that {0} is a member of Oculus Start but couldn't find a valid Discord username!".format(name))
         else:
             if startParser.exists == False:
                 print("{0} is not a valid Oculus username!".format(name))

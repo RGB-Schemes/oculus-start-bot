@@ -2,7 +2,7 @@ import re
 from html.parser import HTMLParser
 
 class OculusStartValidator(HTMLParser):
-    pattern = re.compile("^[a-zA-z ']{2,32}#[0-9]{4}$")
+    pattern = re.compile("^((?!discordtag|everyone|here)[^@#:```]){2,32}#[0-9]{4}$")
 
     # Used to find if the user is an Oculus Start member.
     inRankSpan = False
