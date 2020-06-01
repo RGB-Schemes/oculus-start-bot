@@ -8,6 +8,7 @@ parser = argparse.ArgumentParser(description='Used to test out the utilities ava
 parser.add_argument('--verify', help='Verify that a user exists. Requires an Oculus username.', nargs='+')
 parser.add_argument('--status', help='Gets the status of a Discord user. Requires a Discord username.', nargs='+')
 parser.add_argument('--email', help='Adds an email address to a specified user. Requires a Discord username and email address.', nargs=2)
+parser.add_argument('--hardware', help='Add or remove hardware to a specified user. Requires a Discord username, add/remove, and the hardware to add/remove.', nargs=3)
 
 args = parser.parse_args()
 
@@ -55,3 +56,26 @@ if args.email is not None:
             print("Failed to add an email address for user {0}!".format(args.email[0]))
     else:
         print("No valid user {0}!".format(args.email[0]))
+
+if args.hardware is not None:
+    if args.hardware[1].lower() == 'add':
+        result, error = start_users.add_hardware(args.hardware[0], args.hardware[2])
+        if result:
+            user = start_users.get_verified_user(args.hardware[0])
+            if user is not None and user['hardware'] is not None and len(user['hardware']) > 0:
+                print("Hardware for {0}: {1}".format(args.hardware[0], user['hardware']))
+            else:
+                print("Failed to add hardware for user {0}!".format(args.hardware[0]))
+        else:
+            print(error)
+
+    if args.hardware[1].lower() == 'remove':
+        result, error = start_users.remove_hardware(args.hardware[0], args.hardware[2])
+        if result:
+            user = start_users.get_verified_user(args.hardware[0])
+            if user is not None and user['hardware'] is not None and len(user['hardware']) > 0:
+                print("Hardware for {0}: {1}".format(args.hardware[0], user['hardware']))
+            else:
+                print("Failed to remove hardware for user {0}!".format(args.hardware[0]))
+        else:
+            print(error)

@@ -35,47 +35,6 @@ async def on_command_error(ctx, error):
 async def finishmygameforme(ctx):
     await ctx.send("Don't tell me what to do!")
 
-@bot.command(name='email', help='Attaches your email address to your Discord handle for the bot. Use this for registering for events and such!')
-async def email(ctx, email: str):
-    await ctx.message.delete()
-
-    embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
-    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
-
-    if start_users.is_verified(str(ctx.author)):
-        if start_users.add_oculus_email(str(ctx.author), email):
-            user = start_users.get_verified_user(str(ctx.author))
-            if user is not None and user['email'] is not None and user['email'] == email:
-                embed.add_field(name=":white_check_mark:", value="Added the email address [{0}]({0}) for user {1}! You can change this at any time, but note that this should be the same as used on your Oculus account to participate in events!".format(email, str(ctx.author)))
-            else:
-                embed.add_field(name=":x:", value="Failed to add an email address for user {0}!".format(str(ctx.author)))
-        else:
-            embed.add_field(name=":x:", value="Failed to add an email address for user {0}!".format(str(ctx.author)))
-    else:
-        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
-
-    await ctx.author.create_dm()
-    await ctx.author.dm_channel.send(content="", embed=embed)
-
-@bot.command(name='status', help='Verifies your Discord username against your Oculus Forum profile.')
-async def status(ctx):
-    await ctx.message.delete()
-
-    print("Checking verification status of {0}".format(str(ctx.author)))
-    user = start_users.get_verified_user(str(ctx.author))
-
-    embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
-    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
-
-    if user is not None and user['discordHandle'] == str(ctx.author) and user['forumUsername'] is not None:
-        addr = "https://forums.oculusvr.com/start/profile/{0}".format(user['forumUsername'])
-        embed.add_field(name=":white_check_mark:", value="You've been previously verified as a member of Oculus Start {0}! This was done with the Oculus username [{1}]({2}).".format(ctx.author, user['forumUsername'], addr))
-    else:
-        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
-    
-    await ctx.author.create_dm()
-    await ctx.author.dm_channel.send(content="", embed=embed)
-
 @bot.command(name='verify', help='Verifies your Discord username against your Oculus Forum profile.')
 async def verify(ctx, forumUsername: str):
     if forumUsername is None:
@@ -124,6 +83,89 @@ async def verify(ctx, forumUsername: str):
             else:
                 embed.add_field(name=":x:", value="[{0}]({2}) has already verified {1} as their Discord username! Please contact a moderator if this is incorrect!".format(user['forumUsername'], user['discordHandle'], addr))
         await ctx.send(content="", embed=embed)
+
+@bot.command(name='status', help='Verifies your Discord username against your Oculus Forum profile.')
+async def status(ctx):
+    await ctx.message.delete()
+
+    print("Checking verification status of {0}".format(str(ctx.author)))
+    user = start_users.get_verified_user(str(ctx.author))
+
+    embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if user is not None and user['discordHandle'] == str(ctx.author) and user['forumUsername'] is not None:
+        addr = "https://forums.oculusvr.com/start/profile/{0}".format(user['forumUsername'])
+
+        if 'hardware' not in user or len(user['hardware']) < 1:
+            hardware = 'You have no hardware on your profile.'
+        else:
+            hardware = '\nYou have the following hardware on your profile:\n'
+            for hw in user['hardware']:
+                hardware += '- {0}\n'.format(hw)
+        embed.add_field(name=":white_check_mark:", value="You've been previously verified as a member of Oculus Start {0}! This was done with the Oculus username [{1}]({2}).\n{3}".format(ctx.author, user['forumUsername'], addr, hardware))
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+    
+    await ctx.author.create_dm()
+    await ctx.author.dm_channel.send(content="", embed=embed)
+
+@bot.command(name='email', help='Attaches your email address to your Discord handle for the bot. Use this for registering for events and such!')
+async def email(ctx, email: str):
+    await ctx.message.delete()
+
+    embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if start_users.is_verified(str(ctx.author)):
+        if start_users.add_oculus_email(str(ctx.author), email):
+            user = start_users.get_verified_user(str(ctx.author))
+            if user is not None and user['email'] is not None and user['email'] == email:
+                embed.add_field(name=":white_check_mark:", value="Added the email address [{0}]({0}) for user {1}! You can change this at any time, but note that this should be the same as used on your Oculus account to participate in events!".format(email, str(ctx.author)))
+            else:
+                embed.add_field(name=":x:", value="Failed to add an email address for user {0}!".format(str(ctx.author)))
+        else:
+            embed.add_field(name=":x:", value="Failed to add an email address for user {0}!".format(str(ctx.author)))
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+
+    await ctx.author.create_dm()
+    await ctx.author.dm_channel.send(content="", embed=embed)
+
+@bot.command(name='hardware', help='Manage adding and removing hardware!')
+async def hardware(ctx, cmd: str, hw: str):
+    await ctx.message.delete()
+
+    embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if start_users.is_verified(str(ctx.author)):
+        hardware = None
+        if hw.upper() in start_users.oculus_hardware:
+            hardware = start_users.oculus_hardware[hw.upper()]
+
+        if hardware is not None and cmd.lower() == 'add':
+            result, error_msg = start_users.add_hardware(str(ctx.author), hardware)
+            if result:
+                embed.add_field(name=":white_check_mark:", value="Added \'{0}\' as hardware to your profile!".format(hardware))
+        elif hardware is not None and cmd.lower() == 'remove':
+            result, error_msg = start_users.remove_hardware(str(ctx.author), hardware)
+            if result:
+                embed.add_field(name=":white_check_mark:", value="Removed \'{0}\' as hardware from your profile!".format(hardware))
+        elif hardware is None:
+            result = False
+            error_msg = 'Could not find the hardware for \'{0}\', please specify a valid device from this list:\n\n{1}'.format(hw, '\n'.join(['- %s (%s)' % (key, value) for (key, value) in start_users.oculus_hardware.items()]))
+        else:
+            result = False
+            error_msg = 'No valid subcommand found! Please specify if you want to add or remove hardware!'
+
+        if not result:
+            embed.add_field(name=":x:", value=error_msg)
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+
+    await ctx.author.create_dm()
+    await ctx.author.dm_channel.send(content="", embed=embed)
 
 bot.run(TOKEN)
 print("Closing bot...")

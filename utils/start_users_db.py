@@ -1,5 +1,13 @@
 import boto3
 
+oculus_hardware = {
+    'RIFT': 'Oculus Rift',
+    'CV1': 'Oculus Rift',
+    'GO': 'Oculus Go',
+    'RIFTS': 'Oculus Rift S',
+    'QUEST': 'Oculus Quest'
+}
+
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 table = dynamodb.Table('Oculus_Start_Discord_Members')
 
@@ -53,3 +61,51 @@ def add_oculus_email(discordHandle, email):
         )
         return result is not None
     return False
+
+def add_hardware(discordHandle, hardware):
+    if is_verified(discordHandle):
+        user = get_verified_user(discordHandle)
+
+        if 'hardware' not in user:
+            user['hardware'] = [hardware]
+        elif hardware not in user['hardware']:
+            user['hardware'].append(hardware)
+        else:
+            return False, 'Hardware \'{0}\' is already register for {1}!'.format(hardware, discordHandle)
+
+        result = table.update_item(
+            Key={
+                'discordHandle': discordHandle
+            },
+            UpdateExpression="set hardware=:h",
+            ExpressionAttributeValues={
+                ':h': user['hardware']
+            },
+            ReturnValues="UPDATED_NEW"
+        )
+        return result is not None, 'Success'
+    return False, 'No valid user \'{0}\'!'.format(discordHandle)
+
+def remove_hardware(discordHandle, hardware):
+    if is_verified(discordHandle):
+        user = get_verified_user(discordHandle)
+
+        if 'hardware' in user:
+            i = -1
+            for j in range(0, len(user['hardware'])):
+                if user['hardware'][j] == hardware:
+                    i = j
+                    break
+
+            if i > -1:
+                table.update_item(
+                    Key={
+                        'discordHandle': discordHandle
+                    },
+                    UpdateExpression="remove hardware[{0}]".format(i),
+                    ReturnValues="UPDATED_NEW"
+                )
+                return True, 'Success'
+            else:
+                return False, 'No hardware \'{0}\' for user {1}!'.format(hardware, discordHandle)
+    return False, 'No valid user \'{0}\''.format(discordHandle)
