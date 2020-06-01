@@ -2,6 +2,7 @@ import re
 from html.parser import HTMLParser
 
 class OculusStartValidator(HTMLParser):
+    # Google Form Valid Version - ^[^@#:`]{2,32}#[0-9]{4}$
     pattern = re.compile("^((?!discordtag|everyone|here)[^@#:```]){2,32}#[0-9]{4}$")
 
     # Used to find if the user is an Oculus Start member.
@@ -19,6 +20,7 @@ class OculusStartValidator(HTMLParser):
     forumUsername = None
     discordUsername = None
     isOculusStartMember = False
+    invalidDiscordUsername = None
 
     def __init__(self, forumUsername):
         HTMLParser.__init__(self)
@@ -85,5 +87,8 @@ class OculusStartValidator(HTMLParser):
                     self.isInCommentAuthorDiv = False
             elif self.isInCommentTextDiv and self.commentAuthorVerified:
                 print("Username Found: {0}".format(data.strip()))
-                if self.pattern.match(data.strip()):
+                if self.discordUsername == None and self.pattern.match(data.strip()):
                     self.discordUsername = data.strip()
+                elif self.discordUsername == None and self.invalidDiscordUsername == None:
+                    self.invalidDiscordUsername = data.strip()
+
