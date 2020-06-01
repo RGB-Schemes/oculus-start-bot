@@ -17,6 +17,16 @@ TOKEN = os.getenv('DISCORD_TOKEN')
 ROLE_VALUE = os.getenv('ROLE_VALUE')
 bot = commands.Bot(command_prefix='!')
 
+def get_user_profile_img(discordHandle):
+    user = start_users.get_verified_user(discordHandle)
+    if user is not None:
+        addr = "https://forums.oculusvr.com/start/profile/{0}".format(user['forumUsername'])
+        startParser = OculusStartValidator(user['forumUsername'])
+        startParser.feed(requests.get(addr).text)
+        if startParser.forumPicture != None:
+            return startParser.forumPicture
+    return 'https://cdn.discordapp.com/embed/avatars/0.png'
+
 @bot.event
 async def on_command_error(ctx, error):
     await ctx.send("There was an error with the command given! {0}".format(error))
@@ -25,24 +35,46 @@ async def on_command_error(ctx, error):
 async def finishmygameforme(ctx):
     await ctx.send("Don't tell me what to do!")
 
+@bot.command(name='email', help='Attaches your email address to your Discord handle for the bot. Use this for registering for events and such!')
+async def email(ctx, email: str):
+    await ctx.message.delete()
+
+    embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if start_users.is_verified(str(ctx.author)):
+        if start_users.add_oculus_email(str(ctx.author), email):
+            user = start_users.get_verified_user(str(ctx.author))
+            if user is not None and user['email'] is not None and user['email'] == email:
+                embed.add_field(name=":white_check_mark:", value="Added the email address [{0}]({0}) for user {1}! You can change this at any time, but note that this should be the same as used on your Oculus account to participate in events!".format(email, str(ctx.author)))
+            else:
+                embed.add_field(name=":x:", value="Failed to add an email address for user {0}!".format(str(ctx.author)))
+        else:
+            embed.add_field(name=":x:", value="Failed to add an email address for user {0}!".format(str(ctx.author)))
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+
+    await ctx.author.create_dm()
+    await ctx.author.dm_channel.send(content="", embed=embed)
+
 @bot.command(name='status', help='Verifies your Discord username against your Oculus Forum profile.')
 async def status(ctx):
+    await ctx.message.delete()
+
     print("Checking verification status of {0}".format(str(ctx.author)))
     user = start_users.get_verified_user(str(ctx.author))
 
     embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
-    embed.set_thumbnail(url="https://cdn.discordapp.com/embed/avatars/0.png")
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
 
     if user is not None and user['discordHandle'] == str(ctx.author) and user['forumUsername'] is not None:
         addr = "https://forums.oculusvr.com/start/profile/{0}".format(user['forumUsername'])
-        startParser = OculusStartValidator(user['forumUsername'])
-        startParser.feed(requests.get(addr).text)
-        if startParser.forumPicture != None:
-            embed.set_thumbnail(url=startParser.forumPicture)
         embed.add_field(name=":white_check_mark:", value="You've been previously verified as a member of Oculus Start {0}! This was done with the Oculus username [{1}]({2}).".format(ctx.author, user['forumUsername'], addr))
     else:
         embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
-    await ctx.send(content="", embed=embed)
+    
+    await ctx.author.create_dm()
+    await ctx.author.dm_channel.send(content="", embed=embed)
 
 @bot.command(name='verify', help='Verifies your Discord username against your Oculus Forum profile.')
 async def verify(ctx, forumUsername: str):
