@@ -113,24 +113,20 @@ def remove_hardware(discordHandle, hardware):
 def add_project(discordHandle, projectName, projectLogo, projectDescription, projectTrailer, projectLink):
     if is_verified(discordHandle):
         user = get_verified_user(discordHandle)
+        project = {
+            'projectName': projectName,
+            'projectLogo': projectLogo,
+            'projectDescription': projectDescription,
+            'projectTrailer': projectTrailer,
+            'projectLink': projectLink
+        }
 
         if 'projects' not in user:
-            user['projects'] = [{
-                'projectName': projectName,
-                'projectDescription': projectDescription,
-                'projectTrailer': projectTrailer,
-                'projectLink': projectLink
-            }]
+            user['projects'] = [project]
         elif any(x['projectName'] == projectName for x in user['projects']):
             return False, 'Project \'{0}\' is already registered for {1}! Please remove it and then re-add it.'.format(projectName, discordHandle)
         else:
-            user['projects'].insert(0, {
-                'projectName': projectName,
-                'projectLogo': projectLogo,
-                'projectDescription': projectDescription,
-                'projectTrailer': projectTrailer,
-                'projectLink': projectLink
-            })
+            user['projects'].insert(0, project)
 
         result = table.update_item(
             Key={
