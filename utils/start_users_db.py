@@ -71,7 +71,7 @@ def add_hardware(discordHandle, hardware):
         elif hardware not in user['hardware']:
             user['hardware'].append(hardware)
         else:
-            return False, 'Hardware \'{0}\' is already register for {1}!'.format(hardware, discordHandle)
+            return False, 'Hardware \'{0}\' is already registered for {1}!'.format(hardware, discordHandle)
 
         result = table.update_item(
             Key={
@@ -108,4 +108,63 @@ def remove_hardware(discordHandle, hardware):
                 return True, 'Success'
             else:
                 return False, 'No hardware \'{0}\' for user {1}!'.format(hardware, discordHandle)
+    return False, 'No valid user \'{0}\''.format(discordHandle)
+
+def add_project(discordHandle, projectName, projectLogo, projectDescription, projectTrailer, projectLink):
+    if is_verified(discordHandle):
+        user = get_verified_user(discordHandle)
+
+        if 'projects' not in user:
+            user['projects'] = [{
+                'projectName': projectName,
+                'projectDescription': projectDescription,
+                'projectTrailer': projectTrailer,
+                'projectLink': projectLink
+            }]
+        elif any(x['projectName'] == projectName for x in user['projects']):
+            return False, 'Project \'{0}\' is already registered for {1}! Please remove it and then re-add it.'.format(projectName, discordHandle)
+        else:
+            user['projects'].insert(0, {
+                'projectName': projectName,
+                'projectLogo': projectLogo,
+                'projectDescription': projectDescription,
+                'projectTrailer': projectTrailer,
+                'projectLink': projectLink
+            })
+
+        result = table.update_item(
+            Key={
+                'discordHandle': discordHandle
+            },
+            UpdateExpression="set projects=:p",
+            ExpressionAttributeValues={
+                ':p': user['projects']
+            },
+            ReturnValues="UPDATED_NEW"
+        )
+        return result is not None, 'Success'
+    return False, 'No valid user \'{0}\'!'.format(discordHandle)
+
+def remove_project(discordHandle, projectName):
+    if is_verified(discordHandle):
+        user = get_verified_user(discordHandle)
+
+        if 'projects' in user:
+            i = -1
+            for j in range(0, len(user['projects'])):
+                if user['projects'][j]['projectName'] == projectName:
+                    i = j
+                    break
+
+            if i > -1:
+                table.update_item(
+                    Key={
+                        'discordHandle': discordHandle
+                    },
+                    UpdateExpression="remove projects[{0}]".format(i),
+                    ReturnValues="UPDATED_NEW"
+                )
+                return True, 'Success'
+            else:
+                return False, 'No project \'{0}\' for user {1}!'.format(projectName, discordHandle)
     return False, 'No valid user \'{0}\''.format(discordHandle)

@@ -9,6 +9,7 @@ parser.add_argument('--verify', help='Verify that a user exists. Requires an Ocu
 parser.add_argument('--status', help='Gets the status of a Discord user. Requires a Discord username.', nargs='+')
 parser.add_argument('--email', help='Adds an email address to a specified user. Requires a Discord username and email address.', nargs=2)
 parser.add_argument('--hardware', help='Add or remove hardware to a specified user. Requires a Discord username, add/remove, and the hardware to add/remove.', nargs=3)
+parser.add_argument('--project', help='Add or remove project to a specified user. Requires a Discord username, add/remove, and the project to add/remove.', nargs=7)
 
 args = parser.parse_args()
 
@@ -77,5 +78,28 @@ if args.hardware is not None:
                 print("Hardware for {0}: {1}".format(args.hardware[0], user['hardware']))
             else:
                 print("Failed to remove hardware for user {0}!".format(args.hardware[0]))
+        else:
+            print(error)
+
+if args.project is not None:
+    if args.project[1].lower() == 'add':
+        result, error = start_users.add_project(args.project[0], args.project[2], args.project[3], args.project[4], args.project[5], args.project[6])
+        if result:
+            user = start_users.get_verified_user(args.project[0])
+            if user is not None and user['projects'] is not None and len(user['projects']) > 0:
+                print("Project for {0}: {1}".format(args.project[0], user['projects']))
+            else:
+                print("Failed to add project for user {0}!".format(args.project[0]))
+        else:
+            print(error)
+
+    if args.project[1].lower() == 'remove':
+        result, error = start_users.remove_project(args.project[0], args.project[2])
+        if result:
+            user = start_users.get_verified_user(args.project[0])
+            if user is not None and user['projects'] is not None and len(user['projects']) > 0:
+                print("Project for {0}: {1}".format(args.project[0], user['projects']))
+            else:
+                print("No projects found for {0}!".format(args.project[0]))
         else:
             print(error)

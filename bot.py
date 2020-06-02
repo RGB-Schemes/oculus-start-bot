@@ -27,11 +27,30 @@ def get_user_profile_img(discordHandle):
             return startParser.forumPicture
     return 'https://cdn.discordapp.com/embed/avatars/0.png'
 
+def get_project_embed(ctx, userInfo, projectIndex):
+    userImg = get_user_profile_img(userInfo['discordHandle'])
+    if len(userInfo['projects']) - 1 < projectIndex:
+        return None
+
+    projectInfo = userInfo['projects'][projectIndex]
+
+    embed = discord.Embed(title=projectInfo['projectName'], description=projectInfo['projectDescription'], colour=discord.Colour(0x254f63))
+    embed.set_author(name=userInfo['discordHandle'],icon_url=userImg)
+
+    if 'projectLogo' in projectInfo and projectInfo['projectLogo']:
+       embed.set_thumbnail(url=projectInfo['projectLogo'])
+    if 'projectLink' in projectInfo and projectInfo['projectLink']:
+        embed.add_field(name="Project Link", value=projectInfo['projectLink'])
+    if 'projectTrailer' in projectInfo and projectInfo['projectTrailer']:
+        embed.add_field(name="Video Trailer", value=projectInfo['projectTrailer'])
+
+    return embed
+
 @bot.event
 async def on_command_error(ctx, error):
     await ctx.send("There was an error with the command given! {0}".format(error))
 
-@bot.command(name='finishmygameforme')
+@bot.command(name='finishmygameforme', help='Asks the bot to help finish your game for you.')
 async def finishmygameforme(ctx):
     await ctx.send("Don't tell me what to do!")
 
@@ -84,7 +103,7 @@ async def verify(ctx, forumUsername: str):
                 embed.add_field(name=":x:", value="[{0}]({2}) has already verified {1} as their Discord username! Please contact a moderator if this is incorrect!".format(user['forumUsername'], user['discordHandle'], addr))
         await ctx.send(content="", embed=embed)
 
-@bot.command(name='status', help='Verifies your Discord username against your Oculus Forum profile.')
+@bot.command(name='status', help='Details the list of information stored ofr you. This will be DM\'d to you for privacy reasons.')
 async def status(ctx):
     await ctx.message.delete()
 
@@ -98,12 +117,16 @@ async def status(ctx):
         addr = "https://forums.oculusvr.com/start/profile/{0}".format(user['forumUsername'])
 
         if 'hardware' not in user or len(user['hardware']) < 1:
-            hardware = 'You have no hardware on your profile.'
+            hardware = '\nYou have no hardware on your profile.\n'
         else:
             hardware = '\nYou have the following hardware on your profile:\n'
             for hw in user['hardware']:
                 hardware += '- {0}\n'.format(hw)
-        embed.add_field(name=":white_check_mark:", value="You've been previously verified as a member of Oculus Start {0}! This was done with the Oculus username [{1}]({2}).\n{3}".format(ctx.author, user['forumUsername'], addr, hardware))
+        if 'email' not in user:
+            email = '\nYou do not have an email address registered!\n'
+        else:
+            email = '\nYour email address is registered as {0}\n'.format(user['email'])
+        embed.add_field(name=":white_check_mark:", value="You've been previously verified as a member of Oculus Start {0}! This was done with the Oculus username [{1}]({2}).\n{3}{4}".format(ctx.author, user['forumUsername'], addr, email, hardware))
     else:
         embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
     
@@ -132,8 +155,8 @@ async def email(ctx, email: str):
     await ctx.author.create_dm()
     await ctx.author.dm_channel.send(content="", embed=embed)
 
-@bot.command(name='hardware', help='Manage adding and removing hardware!')
-async def hardware(ctx, cmd: str, hw: str):
+@bot.command(name='hardware', help='Manage adding and removing hardware! Use \'add\' to add hardware and \'remove\' to remove hardware with this command.')
+async def hardware(ctx, action: str, hw: str):
     await ctx.message.delete()
 
     embed = discord.Embed(title="Oculus Start Status for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
@@ -144,11 +167,11 @@ async def hardware(ctx, cmd: str, hw: str):
         if hw.upper() in start_users.oculus_hardware:
             hardware = start_users.oculus_hardware[hw.upper()]
 
-        if hardware is not None and cmd.lower() == 'add':
+        if hardware is not None and action.lower() == 'add':
             result, error_msg = start_users.add_hardware(str(ctx.author), hardware)
             if result:
                 embed.add_field(name=":white_check_mark:", value="Added \'{0}\' as hardware to your profile!".format(hardware))
-        elif hardware is not None and cmd.lower() == 'remove':
+        elif hardware is not None and action.lower() == 'remove':
             result, error_msg = start_users.remove_hardware(str(ctx.author), hardware)
             if result:
                 embed.add_field(name=":white_check_mark:", value="Removed \'{0}\' as hardware from your profile!".format(hardware))
@@ -166,6 +189,61 @@ async def hardware(ctx, cmd: str, hw: str):
 
     await ctx.author.create_dm()
     await ctx.author.dm_channel.send(content="", embed=embed)
+
+@bot.command(name='project', help='Manage adding and removing projects! Use \'add\' to add projects and \'remove\' to remove projects with this command. When adding a project, please specify a project name, logo, description, trailer, and link.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !project add \"Test Project\" http://www.example.com/logo.png \"This is where the description goes.\" http://www.example.com/trailer http://www.example.com/project\n\nExample usage: !project remove \"Test Project\"')
+async def project(ctx, action: str, projectName: str, projectLogo: str=None, projectDescription: str="No description available.", projectTrailer: str=None, projectLink: str=None):
+    await ctx.message.delete()
+
+    embed = discord.Embed(title="Projects for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if start_users.is_verified(str(ctx.author)):
+        if action.lower() == 'add':
+            result, error_msg = start_users.add_project(str(ctx.author), projectName, projectLogo, projectDescription, projectTrailer, projectLink)
+            if result:
+                embed.add_field(name=":white_check_mark:", value="Added \'{0}\' as a project to your profile!".format(projectName))
+        elif action.lower() == 'remove':
+            result, error_msg = start_users.remove_project(str(ctx.author), projectName)
+            if result:
+                embed.add_field(name=":white_check_mark:", value="Removed \'{0}\' as a project from your profile!".format(projectName))
+        else:
+            result = False
+            error_msg = 'No valid subcommand found! Please specify if you want to add or remove hardware!'
+
+        if not result:
+            embed.add_field(name=":x:", value=error_msg)
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+
+    await ctx.author.create_dm()
+    await ctx.author.dm_channel.send(content="", embed=embed)
+
+@bot.command(name='latest', help='Lists the latest project for another Discord user. Specify an index to get an older project instead.\n\nExample usage: !latest @GEMISIS#0001\n\nExample usage: !latest @GEMISIS#0001 5')
+async def latest(ctx, user: discord.User, projectIndex: int=0):
+    await ctx.message.delete()
+
+    authorVerified = start_users.is_verified(str(ctx.author))
+    userVerified = start_users.is_verified(str(user))
+
+    embed = discord.Embed(title="Projects for {0}".format(str(user)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(user)))
+
+    if authorVerified and userVerified:
+        userInfo = start_users.get_verified_user(str(user))
+        if 'projects' not in userInfo or len(userInfo['projects']) < 1:
+            await ctx.send(content='No projects found for {0}'.format(user))
+        else:
+            embed = get_project_embed(ctx, userInfo, projectIndex)
+            if embed is None:
+                await ctx.send(content='{0} only has {1} projects. Please specify an index less than that.'.format(user, len(userInfo['projects'])))
+            else:
+                await ctx.send(content="", embed=embed)
+    elif not userVerified:
+        embed.add_field(name=":x:", value="{0} has not been verified as a member of Oculus Start!".format(str(user)))
+        await ctx.send(content="", embed=embed)
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+        await ctx.send(content="", embed=embed)
 
 bot.run(TOKEN)
 print("Closing bot...")
