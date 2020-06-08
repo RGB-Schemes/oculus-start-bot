@@ -33,12 +33,13 @@ def get_project_embed(ctx, userInfo, projectIndex):
         return None
 
     projectInfo = userInfo['projects'][projectIndex]
+    print(projectInfo)
 
     embed = discord.Embed(title=projectInfo['projectName'], description=projectInfo['projectDescription'], colour=discord.Colour(0x254f63))
     embed.set_author(name=userInfo['discordHandle'],icon_url=userImg)
 
     if 'projectLogo' in projectInfo and projectInfo['projectLogo']:
-       embed.set_thumbnail(url=projectInfo['projectLogo'])
+        embed.set_thumbnail(url=projectInfo['projectLogo'])
     if 'projectLink' in projectInfo and projectInfo['projectLink']:
         embed.add_field(name="Project Link", value=projectInfo['projectLink'])
     if 'projectTrailer' in projectInfo and projectInfo['projectTrailer']:
@@ -192,8 +193,6 @@ async def hardware(ctx, action: str, hw: str):
 
 @bot.command(name='project', help='Manage adding and removing projects! Use \'add\' to add projects and \'remove\' to remove projects with this command. When adding a project, please specify a project name, logo, description, trailer, and link.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !project add \"Test Project\" http://www.example.com/logo.png \"This is where the description goes.\" http://www.example.com/trailer http://www.example.com/project\n\nExample usage: !project remove \"Test Project\"')
 async def project(ctx, action: str, projectName: str, projectLogo: str=None, projectDescription: str="No description available.", projectTrailer: str=None, projectLink: str=None):
-    await ctx.message.delete()
-
     embed = discord.Embed(title="Projects for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
     embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
 
@@ -201,10 +200,12 @@ async def project(ctx, action: str, projectName: str, projectLogo: str=None, pro
         if action.lower() == 'add':
             result, error_msg = start_users.add_project(str(ctx.author), projectName, projectLogo, projectDescription, projectTrailer, projectLink)
             if result:
+                await ctx.message.delete()
                 embed.add_field(name=":white_check_mark:", value="Added \'{0}\' as a project to your profile!".format(projectName))
         elif action.lower() == 'remove':
             result, error_msg = start_users.remove_project(str(ctx.author), projectName)
             if result:
+                await ctx.message.delete()
                 embed.add_field(name=":white_check_mark:", value="Removed \'{0}\' as a project from your profile!".format(projectName))
         else:
             result = False
@@ -225,9 +226,6 @@ async def latest(ctx, user: discord.User, projectIndex: int=0):
     authorVerified = start_users.is_verified(str(ctx.author))
     userVerified = start_users.is_verified(str(user))
 
-    embed = discord.Embed(title="Projects for {0}".format(str(user)), colour=discord.Colour(0x254f63))
-    embed.set_thumbnail(url=get_user_profile_img(str(user)))
-
     if authorVerified and userVerified:
         userInfo = start_users.get_verified_user(str(user))
         if 'projects' not in userInfo or len(userInfo['projects']) < 1:
@@ -239,9 +237,13 @@ async def latest(ctx, user: discord.User, projectIndex: int=0):
             else:
                 await ctx.send(content="", embed=embed)
     elif not userVerified:
+        embed = discord.Embed(title="{0} Not Verified".format(str(user)), colour=discord.Colour(0x254f63))
+        embed.set_thumbnail(url=get_user_profile_img(str(user)))
         embed.add_field(name=":x:", value="{0} has not been verified as a member of Oculus Start!".format(str(user)))
         await ctx.send(content="", embed=embed)
     else:
+        embed = discord.Embed(title="{0} Not Verified".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+        embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
         embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
         await ctx.send(content="", embed=embed)
 
