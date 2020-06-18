@@ -1,13 +1,5 @@
 import boto3
 
-oculus_hardware = {
-    'RIFT': 'Oculus Rift',
-    'CV1': 'Oculus Rift',
-    'GO': 'Oculus Go',
-    'RIFTS': 'Oculus Rift S',
-    'QUEST': 'Oculus Quest'
-}
-
 dynamodb = boto3.resource('dynamodb', region_name='us-west-2')
 table = dynamodb.Table('Oculus_Start_Discord_Members')
 
@@ -110,7 +102,7 @@ def remove_hardware(discordHandle, hardware):
                 return False, 'No hardware \'{0}\' for user {1}!'.format(hardware, discordHandle)
     return False, 'No valid user \'{0}\''.format(discordHandle)
 
-def add_project(discordHandle, projectName, projectLogo, projectDescription, projectTrailer, projectLink):
+def add_project(discordHandle, projectName, projectLogo, projectDescription, projectTrailer, projectLink, devices):
     if is_verified(discordHandle):
         user = get_verified_user(discordHandle)
         project = {
@@ -118,7 +110,8 @@ def add_project(discordHandle, projectName, projectLogo, projectDescription, pro
             'projectLogo': projectLogo,
             'projectDescription': projectDescription,
             'projectTrailer': projectTrailer,
-            'projectLink': projectLink
+            'projectLink': projectLink,
+            'projectDevices': devices
         }
 
         if 'projects' not in user:

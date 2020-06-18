@@ -83,7 +83,8 @@ if args.hardware is not None:
 
 if args.project is not None:
     if args.project[1].lower() == 'add':
-        result, error = start_users.add_project(args.project[0], args.project[2], args.project[3], args.project[4], args.project[5], args.project[6])
+        # TODO: Add support for testing hardware being added to projects!
+        result, error = start_users.add_project(args.project[0], args.project[2], args.project[3], args.project[4], args.project[5], args.project[6], [])
         if result:
             user = start_users.get_verified_user(args.project[0])
             if user is not None and user['projects'] is not None and len(user['projects']) > 0:

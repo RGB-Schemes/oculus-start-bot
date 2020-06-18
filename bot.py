@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 import utils.start_users_db as start_users
+import utils.hardware as hardware_utils
 from utils.validator import OculusStartValidator
 
 # Start of the actual bot here.
@@ -29,6 +30,8 @@ def get_user_profile_img(discordHandle):
 
 def get_project_embed(ctx, userInfo, projectIndex):
     userImg = get_user_profile_img(userInfo['discordHandle'])
+    # if userInfo['forumUsername'] == 'Oculus Start Bot':
+    #     userImg = ctx.author.avatar_url
     if len(userInfo['projects']) - 1 < projectIndex:
         return None
 
@@ -40,6 +43,9 @@ def get_project_embed(ctx, userInfo, projectIndex):
 
     if 'projectLogo' in projectInfo and projectInfo['projectLogo']:
         embed.set_thumbnail(url=projectInfo['projectLogo'])
+    if 'projectDevices' in projectInfo and projectInfo['projectDevices']:
+        supported_hw = ', '.join(list(map(lambda x: hardware_utils.get_hardware(x), projectInfo['projectDevices'])))
+        embed.add_field(name="Supported Devices", value=supported_hw)
     if 'projectLink' in projectInfo and projectInfo['projectLink']:
         embed.add_field(name="Project Link", value=projectInfo['projectLink'])
     if 'projectTrailer' in projectInfo and projectInfo['projectTrailer']:
@@ -156,7 +162,7 @@ async def email(ctx, email: str):
     await ctx.author.create_dm()
     await ctx.author.dm_channel.send(content="", embed=embed)
 
-@bot.command(name='hardware', help='Manage adding and removing hardware! Use \'add\' to add hardware and \'remove\' to remove hardware with this command.')
+@bot.command(name='hardware', help='Manage adding and removing hardware! Use \'add\' to add hardware and \'remove\' to remove hardware with this command. {0}'.format(hardware_utils.get_supported_hardware()))
 async def hardware(ctx, action: str, hw: str):
     await ctx.message.delete()
 
@@ -164,9 +170,7 @@ async def hardware(ctx, action: str, hw: str):
     embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
 
     if start_users.is_verified(str(ctx.author)):
-        hardware = None
-        if hw.upper() in start_users.oculus_hardware:
-            hardware = start_users.oculus_hardware[hw.upper()]
+        hardware = hardware_utils.get_hardware(hw)
 
         if hardware is not None and action.lower() == 'add':
             result, error_msg = start_users.add_hardware(str(ctx.author), hardware)
@@ -178,7 +182,7 @@ async def hardware(ctx, action: str, hw: str):
                 embed.add_field(name=":white_check_mark:", value="Removed \'{0}\' as hardware from your profile!".format(hardware))
         elif hardware is None:
             result = False
-            error_msg = 'Could not find the hardware for \'{0}\', please specify a valid device from this list:\n\n{1}'.format(hw, '\n'.join(['- %s (%s)' % (key, value) for (key, value) in start_users.oculus_hardware.items()]))
+            error_msg = hardware_utils.get_hw_error_msg(hw)
         else:
             result = False
             error_msg = 'No valid subcommand found! Please specify if you want to add or remove hardware!'
@@ -191,17 +195,32 @@ async def hardware(ctx, action: str, hw: str):
     await ctx.author.create_dm()
     await ctx.author.dm_channel.send(content="", embed=embed)
 
-@bot.command(name='project', help='Manage adding and removing projects! Use \'add\' to add projects and \'remove\' to remove projects with this command. When adding a project, please specify a project name, logo, description, trailer, and link.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !project add \"Test Project\" http://www.example.com/logo.png \"This is where the description goes.\" http://www.example.com/trailer http://www.example.com/project\n\nExample usage: !project remove \"Test Project\"')
-async def project(ctx, action: str, projectName: str, projectLogo: str=None, projectDescription: str="No description available.", projectTrailer: str=None, projectLink: str=None):
+@bot.command(name='project', help='Manage adding and removing projects! Use \'add\' to add projects and \'remove\' to remove projects with this command. When adding a project, please specify a project name, logo, description, trailer, link, and the list of supported devices.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !project add \"Test Project\" http://www.example.com/logo.png \"This is where the description goes.\" http://www.example.com/trailer http://www.example.com/project RIFT RIFTS GO\n\nExample usage: !project remove \"Test Project\"')
+async def project(ctx, action: str, projectName: str, projectLogo: str=None, projectDescription: str="No description available.", projectTrailer: str=None, projectLink: str=None, *projectHW):
     embed = discord.Embed(title="Projects for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
     embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
 
     if start_users.is_verified(str(ctx.author)):
         if action.lower() == 'add':
-            result, error_msg = start_users.add_project(str(ctx.author), projectName, projectLogo, projectDescription, projectTrailer, projectLink)
+            hardwareList = []
+            result = False
+            error_msg = None
+            for hw in projectHW:
+                hardware = hardware_utils.get_hardware(hw)
+                if hardware is None:
+                    result = False
+                    error_msg = hardware_utils.get_hw_error_msg(hw)
+                    break
+                else:
+                    result = True
+                    hardwareList.append(hw.upper())
             if result:
-                await ctx.message.delete()
-                embed.add_field(name=":white_check_mark:", value="Added \'{0}\' as a project to your profile!".format(projectName))
+                result, error_msg = start_users.add_project(str(ctx.author), projectName, projectLogo, projectDescription, projectTrailer, projectLink, hardwareList)
+                if result:
+                    await ctx.message.delete()
+                    embed.add_field(name=":white_check_mark:", value="Added \'{0}\' as a project to your profile!".format(projectName))
+            elif error_msg is None:
+                error_msg = "No hardware specified for this project! Please select a valid set of hardware to associate with this project!"
         elif action.lower() == 'remove':
             result, error_msg = start_users.remove_project(str(ctx.author), projectName)
             if result:
