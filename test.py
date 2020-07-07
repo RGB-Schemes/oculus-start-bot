@@ -2,6 +2,7 @@ import sys
 import argparse
 import requests
 import utils.start_users_db as start_users
+import utils.events_db as start_events
 from utils.validator import OculusStartValidator
 
 parser = argparse.ArgumentParser(description='Used to test out the utilities available to the bot.')
@@ -10,6 +11,7 @@ parser.add_argument('--status', help='Gets the status of a Discord user. Require
 parser.add_argument('--email', help='Adds an email address to a specified user. Requires a Discord username and email address.', nargs=2)
 parser.add_argument('--hardware', help='Add or remove hardware to a specified user. Requires a Discord username, add/remove, and the hardware to add/remove.', nargs=3)
 parser.add_argument('--project', help='Add or remove project to a specified user. Requires a Discord username, add/remove, and the project to add/remove.', nargs=7)
+parser.add_argument('--events', help='Register and unregister for an event. Requires a Discord username, register/unregister, and the event to register/unregister from.', nargs=4)
 
 args = parser.parse_args()
 
@@ -104,3 +106,15 @@ if args.project is not None:
                 print("No projects found for {0}!".format(args.project[0]))
         else:
             print(error)
+
+if args.events is not None:
+    print(args.events[0].lower())
+    if args.events[0].lower() == 'register':
+        result, error = start_events.register_for_event(args.events[1], args.events[2], args.events[3])
+        print(result)
+        print(error)
+
+    if args.events[0].lower() == 'unregister':
+        result, error = start_events.unregister_for_event(args.events[1], args.events[2], args.events[3])
+        print(result)
+        print(error)
