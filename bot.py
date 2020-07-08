@@ -7,6 +7,7 @@ import discord
 from discord.ext import commands
 
 import utils.start_users_db as start_users
+import utils.events_db as events
 import utils.hardware as hardware_utils
 from utils.validator import OculusStartValidator
 
@@ -265,6 +266,38 @@ async def latest(ctx, user: discord.User, projectIndex: int=0):
         embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
         embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
         await ctx.send(content="", embed=embed)
+
+@bot.command(name='register', help='Register for an event with this command! You\'ll need to know the specific name of the event when registering for right now.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !register \"Monthly Feedback Event - July\" Developers')
+async def register(ctx, eventName: str, registrationType: str="All"):
+    embed = discord.Embed(title="Registration Results for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if start_users.is_verified(str(ctx.author)):
+        result, error = events.register_for_event(eventName, registrationType, str(ctx.author))
+        if result:
+            embed.add_field(name=":white_check_mark:", value="Registered for \'{0}\'!".format(eventName))
+        else:
+            embed.add_field(name=":x:", value=error)
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+    await ctx.message.delete()
+    await ctx.send(content="", embed=embed)
+
+@bot.command(name='unregister', help='Un-register for an event with this command! You\'ll need to know the specific name of the event when un-registering for right now.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !unregister \"Monthly Feedback Event - July\" Developers')
+async def register(ctx, eventName: str, registrationType: str="All"):
+    embed = discord.Embed(title="Registration Results for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
+    embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
+
+    if start_users.is_verified(str(ctx.author)):
+        result, error = events.unregister_for_event(eventName, registrationType, str(ctx.author))
+        if result:
+            embed.add_field(name=":white_check_mark:", value="You have been un-registered from \'{0}\'!".format(eventName))
+        else:
+            embed.add_field(name=":x:", value=error)
+    else:
+        embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
+    await ctx.message.delete()
+    await ctx.send(content="", embed=embed)
 
 bot.run(TOKEN)
 print("Closing bot...")
