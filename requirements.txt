@@ -2,3 +2,5 @@ discord.py
 python-dotenv
 sqlitedict
 boto3
+requests
+lxml

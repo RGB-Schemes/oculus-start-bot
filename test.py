@@ -22,8 +22,6 @@ if args.verify is not None:
         addr = "https://forums.oculusvr.com/start/profile/{0}".format(name)
         # print("Fetching for {0} at {1}".format(name, addr))
         startParser = OculusStartValidator(name)
-        startParser.feed(requests.get(addr).text)
-
         print("Forum picture: {0}".format(startParser.forumPicture))
         if startParser.exists and startParser.isOculusStartMember:
             if startParser.discordUsername is not None:

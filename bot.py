@@ -24,7 +24,6 @@ def get_user_profile_img(discordHandle):
     if user is not None:
         addr = "https://forums.oculusvr.com/start/profile/{0}".format(user['forumUsername'])
         startParser = OculusStartValidator(user['forumUsername'])
-        startParser.feed(requests.get(addr).text)
         if startParser.forumPicture != None:
             return startParser.forumPicture
     return 'https://cdn.discordapp.com/embed/avatars/0.png'
@@ -70,7 +69,6 @@ async def verify(ctx, forumUsername: str):
         addr = "https://forums.oculusvr.com/start/profile/{0}".format(forumUsername)
         # print("Fetching for {0} at {1}".format(name, addr))
         startParser = OculusStartValidator(forumUsername)
-        startParser.feed(requests.get(addr).text)
 
         embed = discord.Embed(title="Oculus Start Verification for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63), url=addr)
         if startParser.forumPicture != None:

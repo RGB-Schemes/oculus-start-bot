@@ -1,19 +1,10 @@
 import re
-from html.parser import HTMLParser
+import requests
+from lxml import html
 
-class OculusStartValidator(HTMLParser):
+class OculusStartValidator:
     # Google Form Valid Version - ^[^@#:`]{2,32}#[0-9]{4}$
     pattern = re.compile("^((?!discordtag|everyone|here)[^@#:```]){2,32}#[0-9]{4}$")
-
-    # Used to find if the user is an Oculus Start member.
-    inRankSpan = False
-
-    tempImg = None
-    isInForumPicture = False
-    commentAuthorVerified = False
-    isInCommentDiv = False
-    isInCommentAuthorDiv = False
-    isInCommentTextDiv = False
 
     exists = False
     forumPicture = None
@@ -23,72 +14,43 @@ class OculusStartValidator(HTMLParser):
     invalidDiscordUsername = None
 
     def __init__(self, forumUsername):
-        HTMLParser.__init__(self)
         self.forumUsername = forumUsername
+        addr = "https://forums.oculusvr.com/start/profile/{0}".format(self.forumUsername)
+        page = requests.get(addr)
+        tree = html.fromstring(page.content)
+        
+        center_splashes = tree.xpath('//div[@class="Center SplashInfo"]')
+        for center_splash in center_splashes:
+            if 'User not found.' in center_splash.text_content():
+                self.exists = False
+                return
 
-    def handle_starttag(self, tag, attrs):
-        if tag == "span":
-            for x, y in attrs:
-                if x == "class" and y == "Rank":
-                    self.inRankSpan = True
-                    break
-        if tag == "img":
-            for x, y in attrs:
-                if x == "src":
-                    if self.isInForumPicture:
-                        self.forumPicture = y
-                    else:
-                        self.tempImg = y
-                    if self.tempImg.startswith("//"):
-                        self.tempImg = "https:{0}".format(self.tempImg)
-                if x == "class" and y == "ProfilePhotoLarge":
-                    if self.tempImg != None:
-                        self.forumPicture = self.tempImg
-                    else:
-                        self.isInForumPicture = True
-        if tag == "div":
-            for x, y in attrs:
-                if x == "class":
-                    if y == "User":
-                        self.exists = True
-                    if y == "ItemContent Activity":
-                        self.isInCommentDiv = True
-                    elif y == "Title":
-                        self.isInCommentAuthorDiv = True
-                    elif y == "Excerpt userContent":
-                        self.isInCommentTextDiv = True
-                    break
-
-    def handle_endtag(self, tag):
-        if self.isInForumPicture and tag == "img":
-            self.isInForumPicture = False
-        if self.inRankSpan and tag == "span":
-            self.inRankSpan = False
-        if self.isInCommentDiv and tag == "div":
-            if self.isInCommentAuthorDiv:
-                self.isInCommentAuthorDiv = False
-            elif self.isInCommentTextDiv:
-                self.isInCommentTextDiv = False
-            else:
-                self.commentAuthorVerified = False
-                self.isInCommentDiv = False
-
-    def handle_data(self, data):
-        if self.inRankSpan:
-            if data.strip() == "Oculus Start Member":
+        self.exists = True
+        # Verify the user is an Oculus Start member.
+        titles = tree.xpath('//span[@class="Rank"]')
+        for title in titles:
+            if title.get('title') == 'Oculus Start':
                 self.isOculusStartMember = True
-            else:
-                self.isOculusStartMember = False
-        if self.isInCommentDiv:
-            if self.isInCommentAuthorDiv:
-                if str(data).lower() == self.forumUsername.lower():
-                    self.commentAuthorVerified = True
-                else:
-                    self.isInCommentAuthorDiv = False
-            elif self.isInCommentTextDiv and self.commentAuthorVerified:
-                print("Username Found: {0}".format(data.strip()))
-                if self.discordUsername == None and self.pattern.match(data.strip()):
-                    self.discordUsername = data.strip()
-                elif self.discordUsername == None and self.invalidDiscordUsername == None:
-                    self.invalidDiscordUsername = data.strip()
+                break
 
+        if self.isOculusStartMember:
+            profilePic = tree.xpath('//img[@class="ProfilePhotoLarge"]')
+            if profilePic is not None and len(profilePic) > 0:
+                self.forumPicture = profilePic[0].get('src')
+
+            comments = tree.xpath('//div[@class="ItemContent Activity"]')
+            for comment in comments:
+                author = comment.find('./div[@class="Title"]')
+                if author is not None and author.text_content() == self.forumUsername:
+                    details = comment.find('./div[@class="Excerpt userContent"]')
+                    if details is not None:
+                        result = details.text_content()
+                        if self.pattern.match(result.strip()):
+                            self.discordUsername = result.strip()
+                            self.invalidDiscordUsername = None
+                            print('{0} is a valid Start user with the Discord handle {1}!'.format(self.forumUsername, self.discordUsername))
+                            break
+                        else:
+                            self.invalidDiscordUsername = result.strip()
+        else:
+            print('{0} is not a valid Start user!'.format(self.forumUsername))
