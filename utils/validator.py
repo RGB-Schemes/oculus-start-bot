@@ -38,6 +38,11 @@ class OculusStartValidator:
             if profilePic is not None and len(profilePic) > 0:
                 self.forumPicture = profilePic[0].get('src')
 
+                # Default profile pics do not have the 'https:' in front of their
+                # urls for some reason, so manually add that in.
+                if not self.forumPicture.startswith('https:'):
+                    self.forumPicture = 'https:{0}'.format(self.forumPicture)
+
             comments = tree.xpath('//div[@class="ItemContent Activity"]')
             for comment in comments:
                 author = comment.find('./div[@class="Title"]')
