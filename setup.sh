@@ -1,0 +1,6 @@
+#!/bin/bash
+echo Setting up pip...
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py
+echo Installing requirements...
+pip install -r requirements.txt

@@ -1,0 +1,15 @@
+version: 0.0
+os: linux
+hooks:
+  BeforeInstall:
+    - location: setup.sh
+      timeout: 10000
+      runas: root
+    - location: startbot.sh
+      timeout: 10000
+      runas: root
+  ApplicationStop:
+    - location: stopbot.sh
+      timeout: 10000
+      runas: root
+
