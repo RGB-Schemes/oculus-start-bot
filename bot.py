@@ -6,6 +6,7 @@ import dotenv
 import discord
 from discord.ext import commands
 
+import utils.secrets as secrets
 import utils.start_users_db as start_users
 import utils.events_db as events
 import utils.hardware as hardware_utils
@@ -15,8 +16,8 @@ from utils.validator import OculusStartValidator
 print("Starting bot with DiscordPY version {0}...".format(discord.__version__))
 
 dotenv.load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-ROLE_VALUE = os.getenv('ROLE_VALUE')
+TOKEN = os.getenv('DISCORD_TOKEN', secrets.get_secret('oculus-start-discord-key'))
+ROLE_VALUE = os.getenv('ROLE_VALUE', 'Start Member')
 bot = commands.Bot(command_prefix='!')
 
 def get_user_profile_img(discordHandle):
