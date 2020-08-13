@@ -1,4 +1,6 @@
 #!/bin/bash
+echo Installing python...
+yum install -y python3
 echo Setting up pip...
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python3 get-pip.py
