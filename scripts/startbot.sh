@@ -1,6 +1,5 @@
 #!/bin/bash
 echo Starting bot...
-python3 /home/ec2-user/scripts/bot.py &
+python3 /home/ec2-user/src/bot.py &
 echo Writing bot pid to file...
 echo $! > /home/ec2-user/bot.pid
-python
