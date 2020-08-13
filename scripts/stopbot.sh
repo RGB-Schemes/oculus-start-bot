@@ -1,3 +1,3 @@
 #!/bin/bash
 echo Killing bot...
-kill -9 $(<"/var/run/bot.pid")
+kill -9 $(<"/home/ec2-user/bot.pid")
