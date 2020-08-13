@@ -2,7 +2,7 @@
 echo Working directory:
 pwd
 echo files:
-ls
+ls /home/ec2-user/
 echo Installing python...
 yum install -y python3
 echo Setting up pip...

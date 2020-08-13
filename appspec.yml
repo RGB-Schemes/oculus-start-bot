@@ -4,10 +4,11 @@ files:
   - source: /
     destination: /home/ec2-user
 hooks:
-  BeforeInstall:
+  AfterInstall:
     - location: scripts/setup.sh
       timeout: 10000
       runas: root
+  ApplicationStart:
     - location: scripts/startbot.sh
       timeout: 1000
       runas: root
