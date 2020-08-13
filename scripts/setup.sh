@@ -1,4 +1,8 @@
 #!/bin/bash
+echo Working directory:
+pwd
+echo files:
+ls
 echo Installing python...
 yum install -y python3
 echo Setting up pip...
