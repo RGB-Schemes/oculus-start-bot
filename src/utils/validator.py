@@ -12,6 +12,7 @@ class OculusStartValidator:
     discordUsername = None
     isOculusStartMember = False
     invalidDiscordUsername = None
+    mismatchCommentAuthor = None
 
     def __init__(self, forumUsername):
         self.forumUsername = forumUsername
@@ -46,15 +47,19 @@ class OculusStartValidator:
             comments = tree.xpath('//div[@class="ItemContent Activity"]')
             for comment in comments:
                 author = comment.find('./div[@class="Title"]')
-                if author is not None and author.text_content() == self.forumUsername:
+                if author is not None:
                     details = comment.find('./div[@class="Excerpt userContent"]')
                     if details is not None:
                         result = details.text_content()
                         if self.pattern.match(result.strip()):
-                            self.discordUsername = result.strip()
-                            self.invalidDiscordUsername = None
-                            print('{0} is a valid Start user with the Discord handle {1}!'.format(self.forumUsername, self.discordUsername))
-                            break
+                            if author.text_content() == self.forumUsername:
+                                self.discordUsername = result.strip()
+                                self.invalidDiscordUsername = None
+                                print('{0} is a valid Start user with the Discord handle {1}!'.format(self.forumUsername, self.discordUsername))
+                                break
+                            else:
+                                self.mismatchCommentAuthor = author.text_content().split(' → ')[0]
+                                print('Expected the comment from {0} but was actually from {1}!'.format(self.forumUsername, self.mismatchCommentAuthor))
                         else:
                             self.invalidDiscordUsername = result.strip()
         else:

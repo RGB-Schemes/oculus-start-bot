@@ -91,6 +91,9 @@ async def verify(ctx, forumUsername: str):
                         embed.add_field(name=":x:", value="I found a comment with the Discord username {0} which is invalid! Please comment on [your profile]({1}) with the **exact** Discord handle (it is case sensative and will contain numbers at the end). See the below image for how this should look on your profile:".format(startParser.invalidDiscordUsername, addr))
                         embed.set_image(url="https://cdn.discordapp.com/attachments/711883614266064986/712060083478986772/unknown.png")
                         embed.add_field(name="Note", value="There may be caching delays if you have just commented, so please try this command again after a minute or two. Again, Discord names are case sensative, so make sure your capitalization is correct!")
+                    elif startParser.discordUsername is None and startParser.mismatchCommentAuthor is not None:
+                        embed.add_field(name=":x:", value="I was expecting a comment from {0} but it was actually made by {1}! Please comment from the same account as the profile!".format(forumUsername, startParser.mismatchCommentAuthor))
+                        embed.set_image(url="https://cdn.discordapp.com/attachments/711883614266064986/712060083478986772/unknown.png")
                     elif startParser.discordUsername is None and startParser.invalidDiscordUsername is None:
                         embed.add_field(name=":x:", value="Couldn't find a comment from {0} with a Discord handle! Please comment on [your profile]({1}) with the **exact** Discord handle (it is case sensative!). See the below image for how this should look on your profile:".format(forumUsername, addr))
                         embed.set_image(url="https://cdn.discordapp.com/attachments/711883614266064986/712060083478986772/unknown.png")
