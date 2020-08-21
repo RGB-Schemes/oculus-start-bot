@@ -86,6 +86,21 @@ async def verify(ctx, forumUsername: str):
                     await ctx.message.author.add_roles(role)
                     start_users.add_verified_user(str(ctx.author), forumUsername)
                     embed.add_field(name=":white_check_mark:", value="Confirmed that [{0}]({2}) is a member of Oculus Start! Assigning the role of {1}! If this does not work, please reach out to the moderators.".format(startParser.discordUsername, ROLE_VALUE, addr))
+
+                    # Send a private message to the user to tell them to reiterate the rules.
+                    privMsg = discord.Embed(title="Notification of Rules for the Oculus Start Server", colour=discord.Colour(0x254f63), url=addr)
+
+                    if startParser.forumPicture != None:
+                        privMsg.set_thumbnail(url=startParser.forumPicture)
+                    else:
+                        privMsg.set_thumbnail(url="https://cdn.discordapp.com/embed/avatars/0.png")
+
+                    privMsg.add_field(name="Welcome to the official Oculus Start Discord Server!", value="Hi {0}, thank you for verifying your Oculus Start membership! Please make sure that you have read the #server-info channel on the server for the rules. In particular:".format(startParser.discordUsername), inline=False)
+                    privMsg.add_field(name="Do not share any screenshots or content from the channel broadly with developers who are not part of the Oculus Start program.", value="Many developers here will share things that are not publicly available pieces of information. This includes Oculus staff. Sharing things from here will result in less things being shared if leaks occur, as well as possible bans for those who do so.", inline=False)
+                    privMsg.add_field(name="Do not harass any other members in the community or send unsolicited private messages.", value="This community is to be a safe place for everyone. We ask that you respect others boundaries, and referain from sending unsolicited private messages.", inline=False)
+                    privMsg.add_field(name="Share political, religious, disparaging, or explicit content.", value="These topics can be particularly volatile topics for many. In order to promote a healthy community, we want try and limit these discussion, outside of where they pertain to the community (e.g. discussions around concerns that may affect developers directly). As a result, please take careful consideration about these discussions and be respectful of others opinions.", inline=False)
+                    await ctx.author.create_dm()
+                    await ctx.author.dm_channel.send(content="", embed=privMsg)
                 else:
                     if startParser.discordUsername is None and startParser.invalidDiscordUsername is not None:
                         embed.add_field(name=":x:", value="I found a comment with the Discord username {0} which is invalid! Please comment on [your profile]({1}) with the **exact** Discord handle (it is case sensative and will contain numbers at the end). See the below image for how this should look on your profile:".format(startParser.invalidDiscordUsername, addr))
