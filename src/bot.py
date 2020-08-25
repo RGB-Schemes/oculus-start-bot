@@ -121,6 +121,7 @@ async def verify(ctx, forumUsername: str):
                     embed.set_image(url="https://media.discordapp.net/attachments/712041288836579368/712059524756013176/unknown.png")
                 else:
                     embed.add_field(name=":x:", value="[{0}]({1}) is not a member of Oculus Start according to their forum profile! You'll want to ensure that you have the **Oculus Start Member** role on your profile! This may take time to appear if you are new to Oculus Start, so please be patient.".format(forumUsername, addr))
+                    embed.add_field(name="Been a member for a while?", value="If you have been a member of Oculus Start for a while, then start by ensuring you have access to the [Oculus Start forums](http://forums.oculusvr.com/start/). If you do not, please send an email to oculusstart@oculus.com to get help, otherwise leave a comment on [this post](https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access#latest) and ping a moderator for access. Note that if you do this, the bot will not respond to you until you have verified with it.")
         else:
             if user['discordHandle'] == str(ctx.author):
                 embed.add_field(name=":white_check_mark:", value="You've already been verified as a member of Oculus Start {0}!".format(user['discordHandle']))

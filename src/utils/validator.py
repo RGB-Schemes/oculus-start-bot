@@ -22,7 +22,7 @@ class OculusStartValidator:
         
         center_splashes = tree.xpath('//div[@class="Center SplashInfo"]')
         for center_splash in center_splashes:
-            if 'User not found.' in center_splash.text_content():
+            if 'user not found' in center_splash.text_content().lower():
                 self.exists = False
                 return
 
