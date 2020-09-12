@@ -332,7 +332,7 @@ async def register(ctx, eventName: str, registrationType: str="All"):
     await ctx.message.delete()
     await ctx.send(content="", embed=embed)
 
-@bot.command(name='stats')
+@bot.command(name='stats', help='Show stats for the server!\n\nRequires the {0} role!'.format(ADMIN_ROLE_VALUE))
 @commands.has_role(ADMIN_ROLE_VALUE)
 async def stats(ctx):
     unverified_count = 0
@@ -356,7 +356,7 @@ async def stats(ctx):
             unverified_count += 1
     await ctx.send('Done updating unverified users!\nWe have {0} bots, {1} unverified users, {2} verified users, and {3} Oculus Staff.'.format(bot_count, unverified_count, verified_count, oculus_staff_count))
 
-@bot.command(name='dm')
+@bot.command(name='dm', help='Sends a private message to all users with the specified role! The input requires a role and a message (between ").\n\nExample usage: !dm @Role "Hello world".\n\nRequires the {0} role!'.format(ADMIN_ROLE_VALUE))
 @commands.has_role(ADMIN_ROLE_VALUE)
 async def dm(ctx, role: discord.Role, message: str):
     could_not_message = []
