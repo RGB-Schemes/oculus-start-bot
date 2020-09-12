@@ -117,7 +117,10 @@ async def verify(ctx, forumUsername: str):
                     await ctx.author.create_dm()
                     await ctx.author.dm_channel.send(content="", embed=privMsg)
                 else:
-                    if startParser.discordUsername is None and startParser.invalidDiscordUsername is not None:
+                    if startParser.forumUsernameWrong:
+                        embed.add_field(name=":x:", value="You gave your Discord username instead of your forum username! Please use your forum username instead!")
+                        embed.set_image(url="https://media.discordapp.net/attachments/712041288836579368/712059524756013176/unknown.png")
+                    elif startParser.discordUsername is None and startParser.invalidDiscordUsername is not None:
                         embed.add_field(name=":x:", value="I found a comment with the Discord username {0} which is invalid! Please comment on [your profile]({1}) with the **exact** Discord handle (it is case sensative and will contain numbers at the end). See the below image for how this should look on your profile:".format(startParser.invalidDiscordUsername, addr))
                         embed.set_image(url="https://cdn.discordapp.com/attachments/711883614266064986/712060083478986772/unknown.png")
                         embed.add_field(name="Note", value="There may be caching delays if you have just commented, so please try this command again after a minute or two. Again, Discord names are case sensative, so make sure your capitalization is correct!")

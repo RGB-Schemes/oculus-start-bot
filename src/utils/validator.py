@@ -6,6 +6,7 @@ class OculusStartValidator:
     # Google Form Valid Version - ^[^@#:`]{2,32}#[0-9]{4}$
     pattern = re.compile("^((?!discordtag|everyone|here)[^@#:```]){2,32}#[0-9]{4}$")
 
+    forumUsernameWrong = False
     exists = False
     forumPicture = None
     forumUsername = None
@@ -25,6 +26,10 @@ class OculusStartValidator:
             if 'user not found' in center_splash.text_content().lower():
                 self.exists = False
                 return
+
+        if self.pattern.match(self.forumUsername):
+            self.forumUsernameWrong = True
+            return
 
         self.exists = True
         # Verify the user is an Oculus Start member.
@@ -57,7 +62,7 @@ class OculusStartValidator:
                                 self.invalidDiscordUsername = None
                                 print('{0} is a valid Start user with the Discord handle {1}!'.format(self.forumUsername, self.discordUsername))
                                 break
-                            elif author.text_content().contains(' → '):
+                            elif ' → ' in author.text_content():
                                 self.mismatchCommentAuthor = author.text_content().split(' → ')[0]
                                 print('Expected the comment from {0} but was actually from {1}!'.format(self.forumUsername, self.mismatchCommentAuthor))
                         else:
