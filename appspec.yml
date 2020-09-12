@@ -6,11 +6,11 @@ files:
 hooks:
   AfterInstall:
     - location: scripts/setup.sh
-      timeout: 5
+      timeout: 30
       runas: root
   ApplicationStart:
     - location: scripts/startbot.sh
-      timeout: 5
+      timeout: 30
       runas: root
   ApplicationStop:
     - location: scripts/stopbot.sh

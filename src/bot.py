@@ -333,30 +333,47 @@ async def register(ctx, eventName: str, registrationType: str="All"):
     await ctx.send(content="", embed=embed)
 
 @bot.command(name='stats')
+@commands.has_role(ADMIN_ROLE_VALUE)
 async def stats(ctx):
-    if any(x.name == ADMIN_ROLE_VALUE for x in ctx.message.author.roles):
-        unverified_count = 0
-        verified_count = 0
-        oculus_staff_count = 0
-        bot_count = 0
-        await ctx.send('Starting to unverify users with only the everyone role...')
-        for member in ctx.guild.members:
-            if any(x.name == UNVERIFIED_ROLE_VALUE for x in member.roles):
-                unverified_count += 1
-            elif any(x.name == VERIFIED_ROLE_VALUE for x in member.roles):
-                verified_count += 1
-            elif any(x.name == OCULUS_STAFF_ROLE_VALUE for x in member.roles):
-                oculus_staff_count += 1
-            elif any(x.name == BOT_ROLE_VALUE for x in member.roles):
-                bot_count += 1
-            elif len(member.roles) == 1 and member.roles[0].name == '@everyone':
-                # Add the unverified role.
-                role = discord.utils.get(ctx.guild.roles, name=UNVERIFIED_ROLE_VALUE)
-                await member.add_roles(role)
-                unverified_count += 1
-        await ctx.send('Done updating unverified users!\nWe have {0} bots, {1} unverified users, {2} verified users, and {3} Oculus Staff.'.format(bot_count, unverified_count, verified_count, oculus_staff_count))
+    unverified_count = 0
+    verified_count = 0
+    oculus_staff_count = 0
+    bot_count = 0
+    await ctx.send('Starting to unverify users with only the everyone role...')
+    for member in ctx.guild.members:
+        if any(x.name == UNVERIFIED_ROLE_VALUE for x in member.roles):
+            unverified_count += 1
+        elif any(x.name == VERIFIED_ROLE_VALUE for x in member.roles):
+            verified_count += 1
+        elif any(x.name == OCULUS_STAFF_ROLE_VALUE for x in member.roles):
+            oculus_staff_count += 1
+        elif any(x.name == BOT_ROLE_VALUE for x in member.roles):
+            bot_count += 1
+        elif len(member.roles) == 1 and member.roles[0].name == '@everyone':
+            # Add the unverified role.
+            role = discord.utils.get(ctx.guild.roles, name=UNVERIFIED_ROLE_VALUE)
+            await member.add_roles(role)
+            unverified_count += 1
+    await ctx.send('Done updating unverified users!\nWe have {0} bots, {1} unverified users, {2} verified users, and {3} Oculus Staff.'.format(bot_count, unverified_count, verified_count, oculus_staff_count))
+
+@bot.command(name='dm')
+@commands.has_role(ADMIN_ROLE_VALUE)
+async def dm(ctx, role: discord.Role, message: str):
+    could_not_message = []
+    await ctx.send('Starting to DM all users with the role {0} with the message ```{1}```*Note this may take some time if there are a lot of users with the specified role.*'.format(str(role), message))
+    for member in ctx.guild.members:
+        if role in member.roles:
+            if hasattr(member, 'dm_channel') and member.dm_channel is None and hasattr(member, 'create_dm'):
+                await member.create_dm()
+
+            if hasattr(member, 'dm_channel') and member.dm_channel is not None:
+                await member.dm_channel.send(message)
+            else:
+                could_not_message.append('**{0}**'.format(str(member.display_name)))
+    if len(could_not_message) > 0:
+        await ctx.send('Could not message the following people: {0}'.format(', '.join(could_not_message)))
     else:
-        await ctx.send('Sorry, you do not have sufficient permissions to use this command!')
+        await ctx.send('Succesfully sent your message to all users!')
 
 bot.run(TOKEN)
 print("Closing bot...")
