@@ -17,7 +17,8 @@ print("Starting bot with DiscordPY version {0}...".format(discord.__version__))
 
 dotenv.load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN', secrets.get_secret('oculus-start-discord-key'))
-ROLE_VALUE = os.getenv('ROLE_VALUE', 'Start Member')
+VERIFIED_ROLE_VALUE = os.getenv('VERIFIED_ROLE_VALUE', 'Start Member')
+UNVERIFIED_ROLE_VALUE = os.getenv('UNVERIFIED_ROLE_VALUE', 'Unverified')
 bot = commands.Bot(command_prefix='!')
 
 def get_user_profile_img(discordHandle):
@@ -58,6 +59,12 @@ def get_project_embed(ctx, userInfo, projectIndex):
 async def on_command_error(ctx, error):
     await ctx.send("There was an error with the command given! {0}".format(error))
 
+@bot.event
+async def on_member_join(member):
+    # Add the unverified role when a new user joins.
+    role = discord.utils.get(member.guild.roles, name=UNVERIFIED_ROLE_VALUE)
+    await member.add_roles(role)
+
 @bot.command(name='finishmygameforme', help='Asks the bot to help finish your game for you.')
 async def finishmygameforme(ctx):
     await ctx.send("Don't tell me what to do!")
@@ -82,10 +89,15 @@ async def verify(ctx, forumUsername: str):
         if user is None:
             if startParser.exists and startParser.isOculusStartMember:
                 if str(startParser.discordUsername) == str(ctx.author):
-                    role = discord.utils.get(ctx.guild.roles, name=ROLE_VALUE)
+                    # Add the verified role.
+                    role = discord.utils.get(ctx.guild.roles, name=VERIFIED_ROLE_VALUE)
                     await ctx.message.author.add_roles(role)
+
+                    # Remove the unverified role.
+                    role = discord.utils.get(ctx.guild.roles, name=UNVERIFIED_ROLE_VALUE)
+                    await ctx.message.author.remove_roles(role)
                     start_users.add_verified_user(str(ctx.author), forumUsername)
-                    embed.add_field(name=":white_check_mark:", value="Confirmed that [{0}]({2}) is a member of Oculus Start! Assigning the role of {1}! If this does not work, please reach out to the moderators.".format(startParser.discordUsername, ROLE_VALUE, addr))
+                    embed.add_field(name=":white_check_mark:", value="Confirmed that [{0}]({2}) is a member of Oculus Start! Assigning the role of {1}! If this does not work, please reach out to the moderators.".format(startParser.discordUsername, VERIFIED_ROLE_VALUE, addr))
 
                     # Send a private message to the user to tell them to reiterate the rules.
                     privMsg = discord.Embed(title="Notification of Rules for the Oculus Start Server", colour=discord.Colour(0x254f63), url=addr)
