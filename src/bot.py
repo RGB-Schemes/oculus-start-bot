@@ -333,13 +333,17 @@ async def register(ctx, eventName: str, registrationType: str="All"):
 @bot.command(name='unverify')
 async def unverify(ctx):
     if any(x.name == ADMIN_ROLE_VALUE for x in ctx.message.author.roles):
+        count = 0
         await ctx.send('Starting to unverify users with only the everyone role...')
         for member in ctx.guild.members:
-            if len(member.roles) == 1 and member.roles[0].name == '@everyone':
+            if any(x.name == UNVERIFIED_ROLE_VALUE for x in member.roles):
+                count += 1
+            elif len(member.roles) == 1 and member.roles[0].name == '@everyone':
                 # Add the unverified role.
                 role = discord.utils.get(ctx.guild.roles, name=UNVERIFIED_ROLE_VALUE)
                 await member.add_roles(role)
-        await ctx.send('Done updating unverified users!')
+                count += 1
+        await ctx.send('Done updating unverified users! We have {0} unverified users currently.'.format(count))
     else:
         await ctx.send('Sorry, you do not have sufficient permissions to use this command!')
 
