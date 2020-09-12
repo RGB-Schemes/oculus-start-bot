@@ -57,7 +57,7 @@ class OculusStartValidator:
                                 self.invalidDiscordUsername = None
                                 print('{0} is a valid Start user with the Discord handle {1}!'.format(self.forumUsername, self.discordUsername))
                                 break
-                            else:
+                            elif author.text_content().contains(' → '):
                                 self.mismatchCommentAuthor = author.text_content().split(' → ')[0]
                                 print('Expected the comment from {0} but was actually from {1}!'.format(self.forumUsername, self.mismatchCommentAuthor))
                         else:
