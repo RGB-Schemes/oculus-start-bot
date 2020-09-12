@@ -17,6 +17,7 @@ print("Starting bot with DiscordPY version {0}...".format(discord.__version__))
 
 dotenv.load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN', secrets.get_secret('oculus-start-discord-key'))
+ADMIN_ROLE_VALUE = os.getenv('ADMIN_ROLE_VALUE', 'Admin')
 VERIFIED_ROLE_VALUE = os.getenv('VERIFIED_ROLE_VALUE', 'Start Member')
 UNVERIFIED_ROLE_VALUE = os.getenv('UNVERIFIED_ROLE_VALUE', 'Unverified')
 bot = commands.Bot(command_prefix='!')
@@ -328,6 +329,19 @@ async def register(ctx, eventName: str, registrationType: str="All"):
         embed.add_field(name=":x:", value="You have not been verified as a member of Oculus Start! Please see https://forums.oculusvr.com/start/discussion/89186/official-oculus-start-discord-access/p1 for instructions.")
     await ctx.message.delete()
     await ctx.send(content="", embed=embed)
+
+@bot.command(name='unverify')
+async def unverify(ctx):
+    if any(x.name == ADMIN_ROLE_VALUE for x in ctx.message.author.roles):
+        await ctx.send('Starting to unverify users with only the everyone role...')
+        for member in ctx.guild.members:
+            if len(member.roles) == 1 and member.roles[0].name == '@everyone':
+                # Add the unverified role.
+                role = discord.utils.get(ctx.guild.roles, name=UNVERIFIED_ROLE_VALUE)
+                await member.add_roles(role)
+        await ctx.send('Done updating unverified users!')
+    else:
+        await ctx.send('Sorry, you do not have sufficient permissions to use this command!')
 
 bot.run(TOKEN)
 print("Closing bot...")
