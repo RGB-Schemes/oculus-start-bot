@@ -17,9 +17,11 @@ print("Starting bot with DiscordPY version {0}...".format(discord.__version__))
 
 dotenv.load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN', secrets.get_secret('oculus-start-discord-key'))
+BOT_ROLE_VALUE = os.getenv('BOT_ROLE_VALUE', 'Bots')
 ADMIN_ROLE_VALUE = os.getenv('ADMIN_ROLE_VALUE', 'Admin')
 VERIFIED_ROLE_VALUE = os.getenv('VERIFIED_ROLE_VALUE', 'Start Member')
 UNVERIFIED_ROLE_VALUE = os.getenv('UNVERIFIED_ROLE_VALUE', 'Unverified')
+OCULUS_STAFF_ROLE_VALUE = os.getenv('OCULUS_STAFF_ROLE_VALUE', 'Official Oculus')
 bot = commands.Bot(command_prefix='!')
 
 def get_user_profile_img(discordHandle):
@@ -330,20 +332,29 @@ async def register(ctx, eventName: str, registrationType: str="All"):
     await ctx.message.delete()
     await ctx.send(content="", embed=embed)
 
-@bot.command(name='unverify')
-async def unverify(ctx):
+@bot.command(name='stats')
+async def stats(ctx):
     if any(x.name == ADMIN_ROLE_VALUE for x in ctx.message.author.roles):
-        count = 0
+        unverified_count = 0
+        verified_count = 0
+        oculus_staff_count = 0
+        bot_count = 0
         await ctx.send('Starting to unverify users with only the everyone role...')
         for member in ctx.guild.members:
             if any(x.name == UNVERIFIED_ROLE_VALUE for x in member.roles):
-                count += 1
+                unverified_count += 1
+            elif any(x.name == VERIFIED_ROLE_VALUE for x in member.roles):
+                verified_count += 1
+            elif any(x.name == OCULUS_STAFF_ROLE_VALUE for x in member.roles):
+                oculus_staff_count += 1
+            elif any(x.name == BOT_ROLE_VALUE for x in member.roles):
+                bot_count += 1
             elif len(member.roles) == 1 and member.roles[0].name == '@everyone':
                 # Add the unverified role.
                 role = discord.utils.get(ctx.guild.roles, name=UNVERIFIED_ROLE_VALUE)
                 await member.add_roles(role)
-                count += 1
-        await ctx.send('Done updating unverified users! We have {0} unverified users currently.'.format(count))
+                unverified_count += 1
+        await ctx.send('Done updating unverified users!\nWe have {0} bots, {1} unverified users, {2} verified users, and {3} Oculus Staff.'.format(bot_count, unverified_count, verified_count, oculus_staff_count))
     else:
         await ctx.send('Sorry, you do not have sufficient permissions to use this command!')
 
