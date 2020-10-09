@@ -132,7 +132,7 @@ async def verify(ctx, forumUsername: str):
                         embed.set_image(url="https://cdn.discordapp.com/attachments/711883614266064986/712060083478986772/unknown.png")
                         embed.add_field(name="Note", value="There may be caching delays if you have just commented, so please try this command again after a minute or two. Again, Discord names are case sensative, so make sure your capitalization is correct!")
                     else:
-                        embed.add_field(name=":x:", value="Confirmed that [{0}]({3}) is a member of Oculus Start but their Discord username was listed as {2}, not {1}!".format(forumUsername, ctx.author, startParser.discordUsername, addr))
+                        embed.add_field(name=":x:", value="Confirmed that [{0}]({3}) is a member of Oculus Start but their Discord username was listed as {2} in the comment on their profile, not {1}!".format(forumUsername, ctx.author, startParser.discordUsername, addr))
             else:
                 if startParser.exists == False:
                     embed.add_field(name=":x:", value="{0} is **NOT** a valid Oculus username! Please enter a valid Oculus username as the input parameter! See this image for where to find your Oculus username on your forum profile:".format(forumUsername, addr))

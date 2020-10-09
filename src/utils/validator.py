@@ -53,7 +53,7 @@ class OculusStartValidator:
             for comment in comments:
                 author = comment.find('./div[@class="Title"]')
                 if author is not None:
-                    details = comment.find('./div[@class="Excerpt userContent"]')
+                    details = comment.find('./div[@class="userContent"]')
                     if details is not None:
                         result = details.text_content()
                         if self.pattern.match(result.strip()):
