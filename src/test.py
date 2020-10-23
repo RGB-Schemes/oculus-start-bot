@@ -12,6 +12,7 @@ parser.add_argument('--email', help='Adds an email address to a specified user. 
 parser.add_argument('--hardware', help='Add or remove hardware to a specified user. Requires a Discord username, add/remove, and the hardware to add/remove.', nargs=3)
 parser.add_argument('--project', help='Add or remove project to a specified user. Requires a Discord username, add/remove, and the project to add/remove.', nargs=7)
 parser.add_argument('--events', help='Register and unregister for an event. Requires a Discord username, register/unregister, and the event to register/unregister from.', nargs=4)
+parser.add_argument('--eventDetails', help='Get details for an event. Requires an event name.', nargs=1)
 
 args = parser.parse_args()
 
@@ -116,3 +117,25 @@ if args.events is not None:
         result, error = start_events.unregister_for_event(args.events[1], args.events[2], args.events[3])
         print(result)
         print(error)
+
+
+if args.eventDetails is not None:
+    print(args.eventDetails[0])
+    result, error = start_events.get_event_details(args.eventDetails[0])
+    print(result)
+    print(error)
+    print('------------------')
+    for regType in result['Participants']:
+        participants = ', '.join(result['Participants'][regType]['Users'])
+        print("Registered as \"{0}\": {1}".format(regType, participants))
+        emails = []
+        missingEmail = []
+        for user in result['Participants'][regType]['Users']:
+            temp = start_users.get_verified_user(user)
+            if 'email' in temp:
+                emails.append(temp['email'])
+            else:
+                missingEmail.append(user)
+        print("Email addresses: {0}".format(', '.join(emails)))
+        print("Missing email addresses for: {0}".format(', '.join(missingEmail)))
+        print('==================')

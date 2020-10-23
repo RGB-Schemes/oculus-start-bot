@@ -26,6 +26,16 @@ def can_register(eventName, registrationType):
     else:
         return False, 'No such event with the name \'{0}\' found!'.format(eventName)
 
+
+def get_event_details(eventName):
+    key = {
+            'EventName': eventName
+        }
+    results = table.get_item(Key=key)
+    if 'Item' in results:
+        return results['Item'], 'Success'
+    return False, 'No registration event by the name of "{0}"!'.format(eventName)
+
 def register_for_event(eventName, registrationType, discordHandle):
     canRegister, error = can_register(eventName, registrationType)
     if canRegister:

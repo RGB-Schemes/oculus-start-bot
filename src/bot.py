@@ -320,7 +320,7 @@ async def register(ctx, eventName: str, registrationType: str="All"):
     await ctx.send(content="", embed=embed)
 
 @bot.command(name='unregister', help='Un-register for an event with this command! You\'ll need to know the specific name of the event when un-registering for right now.\n\nIf you have spaces between words, please encapsulate them in double quotes.\n\nExample usage: !unregister \"Monthly Feedback Event - July\" Developers')
-async def register(ctx, eventName: str, registrationType: str="All"):
+async def unregister(ctx, eventName: str, registrationType: str="All"):
     embed = discord.Embed(title="Registration Results for {0}".format(str(ctx.author)), colour=discord.Colour(0x254f63))
     embed.set_thumbnail(url=get_user_profile_img(str(ctx.author)))
 
@@ -377,6 +377,20 @@ async def dm(ctx, role: discord.Role, message: str):
         await ctx.send('Could not message the following people: {0}'.format(', '.join(could_not_message)))
     else:
         await ctx.send('Succesfully sent your message to all users!')
+
+@bot.command(name='eventDetails', help='Lists details for an event! The input requires an event name (between " characters).\n\nExample usage: !eventDetails "Monthly Feedback Event - October 2020"\n\nRequires the {0} role!'.format(ADMIN_ROLE_VALUE))
+@commands.has_role(ADMIN_ROLE_VALUE)
+async def eventDetails(ctx, eventName: str):
+    embed = discord.Embed(title="Event Details for {0}".format(eventName), colour=discord.Colour(0x254f63))
+
+    result, error = events.get_event_details(eventName)
+    if result:
+        for regType in result['Participants']:
+            participants = ', '.join(result['Participants'][regType]['Users'])
+            embed.add_field(name="", value="Registered {0}: {1}".format(regType, participants))
+    else:
+        embed.add_field(name=":x:", value=error)
+    await ctx.send(content="", embed=embed)
 
 bot.run(TOKEN)
 print("Closing bot...")
