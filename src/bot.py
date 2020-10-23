@@ -387,7 +387,7 @@ async def eventDetails(ctx, eventName: str):
     if result:
         for regType in result['Participants']:
             participants = ', '.join(result['Participants'][regType]['Users'])
-            embed.add_field(name="", value="Registered {0}: {1}".format(regType, participants))
+            embed.add_field(name="Registered as '{0}'".format(regType), value="{0}".format(participants))
     else:
         embed.add_field(name=":x:", value=error)
     await ctx.send(content="", embed=embed)
