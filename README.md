@@ -41,6 +41,9 @@ Users can interact with the bot in one of two primary ways: Via Discord with var
 ## User Authentication
 ![User authentication flow diagram](diagrams/user-auth.png?raw=true)
 
+## Discord Bot - Register for Event
+![Registering for an event on Discord](diagrams/discord-event-registration.png?raw=true)
+
 # Useful commands
 
  * `npm run build`   compile typescript to js

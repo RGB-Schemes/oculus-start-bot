@@ -1,0 +1,41 @@
+title Discord Bot - Register for an Event
+
+participant User
+participant Discord
+participant Discord Bot
+participant Event Management Rest API Endpoint
+
+User->Discord:!register "Monthly Feedback Event - February 2021" Player
+Discord->Discord Bot:register -> {username, "Monthly Feedback Event - February 2021", "Attendee"}
+Discord Bot-->Event Management Rest API Endpoint:POST /register\n\nheader\n{\n    x-api-key: "APIKEY"\n}\n\nbody\n{\n    eventName: "Monthly Feedback Event - February 2021",\n    discordHandle: "ABC#0001",\n    registrationType: "Attendee"\n}
+Event Management Rest API Endpoint-->Event Management Lambda:{\n    eventName: "Monthly Feedback Event - February 2021",\n    discordHandle: "ABC#0001",\n    registrationType: "Attendee"\n}
+Event Management Lambda-->Authenticated Users DynamoDB Table:getItem\n{\n    discordHandle: "ABC#0001"\n}
+Authenticated Users DynamoDB Table->Event Management Lambda:{\n    discordHandle: "ABC#0001",\n    startTrack: "Normal"\n}
+Event Management Lambda->Event Management Lambda: Validate that the user is a member of Oculus Start.
+
+alt If user is NOT authenticated
+Event Management Lambda->Event Management Rest API Endpoint:{\n    statusCode: 409,\n    errorMessage: "User is not a member of Oculus Start."\n}
+Event Management Rest API Endpoint->Discord Bot:{\n    statusCode: 409,\n    errorMessage: "User is not a member of Oculus Start."\n}
+Discord Bot->Discord: Display error message to user about failed registration.
+end 
+
+
+alt If user is authenticated
+Event Management Lambda-->Events DynamoDB Table:getItem\n{\n    name: "Monthly Feedback Event - February 2021"\n}
+Events DynamoDB Table->Event Management Lambda:{\n    name: "Monthly Feedback Event - February 2021",\n    maxAttendees: -1\n    attendees: [\n        "ABC#0001"\n    ]\n}
+Event Management Lambda->Event Management Lambda: Validate space exists for attendees still (-1 indicates no maximum).
+
+alt If there is still space for the user
+Event Management Lambda-->Events DynamoDB Table:updateItem\n{\n    name: "Monthly Feedback Event - February 2021",\n    attendees: [\n        "ABC#0001"\n    ]\n}
+Events DynamoDB Table->Event Management Lambda: Success
+Event Management Lambda->Event Management Rest API Endpoint:{\n    statusCode: 200,\n    errorMessage: undefined\n}
+Event Management Rest API Endpoint->Discord Bot:{\n    statusCode: 200,\n    errorMessage: undefined\n}
+Discord Bot->Discord: Display message "You have successfully registered for the event 'Monthly Feedback Event - February 2021'".
+end 
+
+alt If there is NOT space for the user'
+Event Management Lambda->Event Management Rest API Endpoint:{\n    statusCode: 409,\n    errorMessage: "No more room for Attendees in the event."\n}
+Event Management Rest API Endpoint->Discord Bot:{\n    statusCode: 409,\n    errorMessage: "No more room for Attendees in the event."\n}
+Discord Bot->Discord:Display message "Unfortunately there is no more room for attendees in 'Monthly Feedback Event - February 2021'".
+end 
+end 
