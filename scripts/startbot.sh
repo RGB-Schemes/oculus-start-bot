@@ -1,6 +1,0 @@
-#!/bin/bash
-echo Starting bot...
-python3 -u /home/ec2-user/src/bot.py > /home/ec2-user/bot.log 2> /dev/null < /dev/null &
-echo Writing bot pid to file...
-echo $! > /home/ec2-user/bot.pid
-echo Bot started successfully!
