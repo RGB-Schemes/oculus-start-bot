@@ -9,10 +9,13 @@ end
 
 alt If the user is a member of Oculus Start
 Oculus Start Website-->Authorize Discord Handle API Endpoint:POST /auth?discordHandle=ABC#0001&oculusHandle=ABC&startTrack=Normal\n\nheader\n{\n    x-api-key: "APIKEY"\n}
-Authorize Discord Handle API Endpoint-->Start Member Authorization Lambda:{\n    apiKey: "APIKEY",\n    discordHandle: "ABC#0001",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
+Authorize Discord Handle API Endpoint-->Start Member Authorization Lambda:{\n    discordHandle: "ABC#0001",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
 
-Start Member Authorization Lambda-->Users DynamoDB Table:scan\n{\n    discordHandle: "ABC#0001"\n}
+Start Member Authorization Lambda-->Users DynamoDB Table:scan\n{\n    oculusHandle: "ABC"\n}
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
+Start Member Authorization Lambda-->Users DynamoDB Table:query\n{\n    discordHandle: "ABC#0001"\n}
+Users DynamoDB Table->Start Member Authorization Lambda:{\n}
+Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify and that the Discord handle is not already registered.\nThis means continuing to scan for the Discord handle if the responses are too large.
 Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify.\nThis means continuing to scan for the Discord handle if the responses are too large.
 
 alt If Oculus handle has NOT been previously used

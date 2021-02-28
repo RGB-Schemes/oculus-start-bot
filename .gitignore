@@ -10,3 +10,4 @@ cdk.out
 
 # Ignore build outputs
 dist
+coverage

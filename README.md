@@ -52,3 +52,6 @@ Users can interact with the bot in one of two primary ways: Via Discord with var
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
  * `cdk synth`       emits the synthesized CloudFormation template
+
+# Known Issues
+- There is currently an issue when building with CDK on Windows where paths with spaces will break ESBuild. See [Issue #13311 in the aws-cdk repo](https://github.com/aws/aws-cdk/issues/13311) for details on this. You can find a simple fix [here](https://github.com/aws/aws-cdk/pull/13312) that you can apply to your local setup until it is merged in and a new version of CDK is released.
