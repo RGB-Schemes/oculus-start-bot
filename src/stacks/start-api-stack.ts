@@ -1,12 +1,12 @@
 import { AttributeType, Table } from '@aws-cdk/aws-dynamodb';
 import { Runtime } from '@aws-cdk/aws-lambda';
-import { LambdaIntegration, LambdaIntegrationOptions, RequestValidator, RestApi } from '@aws-cdk/aws-apigateway';
+import { LambdaIntegration, RequestValidator, RestApi } from '@aws-cdk/aws-apigateway';
 import { NodejsFunction } from '@aws-cdk/aws-lambda-nodejs';
 import * as cdk from '@aws-cdk/core';
 import * as path from 'path';
 import { Queue } from '@aws-cdk/aws-sqs';
 
-export class OculusStartBotStack extends cdk.Stack {
+export class StartAPIStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 

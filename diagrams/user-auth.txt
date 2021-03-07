@@ -1,5 +1,14 @@
 title Authenticating Oculus Start Membership
 
+participant Start Member
+participant Oculus Start Website
+participant Authorize Discord Handle API Endpoint
+participant Start Member Authorization Lambda
+participant Users DynamoDB Table
+participant Authenticated User Updates
+participant Discord Bot Lambda
+participant Discord
+
 Start Member-->Oculus Start Website:Signs into their Discord account to link it to their Oculus account. Then clicks a "Join Discord Server" button on the website.
 Oculus Start Website->Oculus Start Website:Verify Oculus Start membership
 
@@ -27,9 +36,9 @@ Authorize Discord Handle API Endpoint->Oculus Start Website:{\n    statusCode: 2
 Oculus Start Website->Start Member: Users gets sent to the Discord server via a page redirect.
 
 Users DynamoDB Table->Authenticated User Updates:{\n    QueueURL: "sqsQueue",\n    MessageAttributes: {\n        "EventType": {\n            DataType: "String",\n            StringValue: "NewMember"\n        },\n        "Publisher": {\n            DataType: "String",\n            StringValue: "AuthAPILambda"\n        }\n    }\n    MessageBody: JSON.stringify({\n        discordHandle: "ABC#0001",\n        startStrack: "Normal"\n    })\n}
-Discord Bot Script-->Authenticated User Updates:Listens for any "NewMember" events
-Authenticated User Updates->Discord Bot Script:{\n    message_attributes: {\n        "EventType": {\n            DataType: "String",\n            StringValue: "NewMember"\n        },\n        "Publisher": {\n            DataType: "String",\n            StringValue: "AuthAPILambda"\n        }\n    }\n    body: JSON.stringify({\n        discordHandle: "ABC#0001",\n        startStrack: "Normal"\n    })\n}
-Discord Bot Script->Discord:Update user to have new role and proper server permissions..
+Discord Bot Lambda-->Authenticated User Updates:Check for any "NewMember" events
+Authenticated User Updates->Discord Bot Lambda:{\n    message_attributes: {\n        "EventType": {\n            DataType: "String",\n            StringValue: "NewMember"\n        },\n        "Publisher": {\n            DataType: "String",\n            StringValue: "AuthAPILambda"\n        }\n    }\n    body: JSON.stringify({\n        discordHandle: "ABC#0001",\n        startStrack: "Normal"\n    })\n}
+Discord Bot Lambda->Discord:Update user to have new role and proper server permissions..
 end
 
 alt If Oculus handle HAS been previously used
