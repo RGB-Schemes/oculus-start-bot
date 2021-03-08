@@ -2,23 +2,23 @@ import {AttributeType, Table} from '@aws-cdk/aws-dynamodb';
 import {Runtime} from '@aws-cdk/aws-lambda';
 import {LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
-import * as cdk from '@aws-cdk/core';
-import * as path from 'path';
+import {Construct, Stack, StackProps} from '@aws-cdk/core';
 import {Queue} from '@aws-cdk/aws-sqs';
+import * as path from 'path';
 
 /**
  * Creates the APIs and code behind them for managing various
  * things in the backend of the Oculus Start bot (user authorization, event
  * management, etc.)
  */
-export class StartAPIStack extends cdk.Stack {
+export class StartAPIStack extends Stack {
   /**
    * The constructor for building the stack.
-   * @param {cdk.Construct} scope The Construct scope to create the stack in.
+   * @param {Construct} scope The Construct scope to create the stack in.
    * @param {string} id The ID of the stack to use.
-   * @param {cdk.StackProps} props The properties to configure the stack.
+   * @param {StackProps} props The properties to configure the stack.
    */
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     // Create our DynamoDB tables first.

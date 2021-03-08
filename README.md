@@ -5,6 +5,27 @@
 
 This project is for setting up the Oculus Start Discord Bot! Using it, you can develop for, deploy locally, and maintain the Oculus Start Bot. It is built with CDK (entirely in TypeScript). It is currently maintained and deployed by **RGB Schemes** in order to help the Oculus Start program continue to grow, though we are attempting to work with Oculus to get this officially supported by them as well. You can learn more about the program and its benefits [here](https://developer.oculus.com/oculus-start/). We highly recommend other developers join!
 
+# Setup
+When deploying, the order in which you run everything is currently important. There are 2 stages to deploying:
+
+1. Deploying the actual infrastructure
+2. Configuring the Discord server to use the infrastructure.
+
+To deploy the infrastructure, you will want to do the following:
+
+1. Run `npm run build`  - Compiles the TypeScript into JavaScript
+2. Run `npm run synth`  - Synthesizes the CDK templates into CloudFormation templates.
+3. Run `npm run deploy` - Deploys all of the infrastructure code to AWS and then outputs the necessary results to a configuration file in the dist folder.
+4. Login to your AWS Account and navigate to the Secrets Manager. Here, you'll want to update your Discord secrets as a JSON configuration that looks something like this:
+```json
+{
+  "appId": "XXXXX",
+  "publicKey": "XXXXX",
+  "clientId": "XXXXX"
+}
+```
+5. Run `npm run config`  - Sets up the Discord server's Slash Commands and other configuration properties. This uses your secrets configured above so that you can securely deploy everything.
+
 # Architecture Overview
 This is the architecture for how this project is laid out server-side. The tools used to create these diagrams are:
 - [Architecture Diagrams](https://app.diagrams.net)
@@ -53,7 +74,7 @@ Users can interact with the bot in one of two primary ways: Via Discord with var
 ![Registering for an event on Discord](diagrams/discord-event-registration.png?raw=true)
 
 # Contributing
-When contributing, you will want to fork this project, and make your changes in your fork of this, after which you can submit a pull request to merge your changes back into the project. Please ensure that the unit tests still pass (and that you've added any additional ones to maintain good code coverage), and ensure that you have verified you are following the lint rules that have been setup. For commands to help with each of these things, see the next section.
+When contributing, you will want to fork this project, and make your changes in your fork of this, after which you can submit a pull request to merge your changes back into the project. Please ensure that the unit tests still pass (and that you've added any additional ones to maintain good code coverage), and ensure that you have verified you are following the lint rules that have been setup.
 
 # Useful commands
 
@@ -62,6 +83,7 @@ When contributing, you will want to fork this project, and make your changes in 
  * `npm run test`       perform the jest unit tests
  * `npm run lint`       perform a lint check across the code
  * `npm run fix-lint`   fix any lint issues automatically where possible
- * `cdk deploy`         deploy this stack to your default AWS account/region
+ * `npm run synth`      emits the synthesized CloudFormation template
+ * `npm run deploy`     deploy this stack to your default AWS account/region and generate outputs for creating slash commands
+ * `npm run config`      configures the setup for a Discord server (run `npm run deploy` and configure your Secrets Manager first)
  * `cdk diff`           compare deployed stack with current state
- * `cdk synth`          emits the synthesized CloudFormation template

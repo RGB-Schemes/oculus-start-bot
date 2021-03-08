@@ -1,7 +1,11 @@
 import { Context, Callback } from 'aws-lambda';
 
 const mockGetSecretValue = jest.fn().mockReturnValue({
-    SecretString: 'secretKey'
+    SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
 });
 
 const mockGetSecretValuePromise = {
@@ -40,7 +44,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Verify - Success', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockReturnValueOnce(true);
         const result = await DiscordBot.verifyEvent({
@@ -56,7 +64,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Verify - Fail', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockReturnValueOnce(false);
         const result = await DiscordBot.verifyEvent({
@@ -87,7 +99,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Verify - nacl Exception', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockImplementationOnce(() => {
             throw new Error('Handle errors');
@@ -106,7 +122,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Handler - Success', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockReturnValueOnce(true);
         const result = await DiscordBot.handler({
@@ -128,7 +148,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Handler (No Event Type) - Success', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockReturnValueOnce(true);
         const result = await DiscordBot.handler(({
@@ -150,7 +174,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Handler - Ping', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockReturnValueOnce(true);
         const result = await DiscordBot.handler({
@@ -168,7 +196,11 @@ describe('Test DiscordBot', () => {
 
     test('Test Handler - Error', async () => {
         mockGetSecretValue.mockReturnValueOnce({
-            SecretString: 'secretKey'
+            SecretString: JSON.stringify({
+                appId: 'appId',
+                publicKey: 'publicKey',
+                clientId: 'clientId'
+            })
         });
         mockVerify.mockReturnValueOnce(false);
         expect(async() => {

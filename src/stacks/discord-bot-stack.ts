@@ -1,25 +1,30 @@
 import {Runtime} from '@aws-cdk/aws-lambda';
 import {LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
-import * as cdk from '@aws-cdk/core';
-import * as path from 'path';
+import {CfnOutput, Construct, Stack, StackProps} from '@aws-cdk/core';
 import {Secret} from '@aws-cdk/aws-secretsmanager';
+import * as path from 'path';
 
 /**
  * A stack for creating the Discord bot itself. Creates an API Gateway endpoint
  * that Discord can reach for events.
  */
-export class DiscordBotStack extends cdk.Stack {
+export class DiscordBotStack extends Stack {
+  public readonly discordAPISecrets: Secret;
+
   /**
    * The constructor for building the stack.
-   * @param {cdk.Construct} scope The Construct scope to create the stack in.
+   * @param {Construct} scope The Construct scope to create the stack in.
    * @param {string} id The ID of the stack to use.
-   * @param {cdk.StackProps} props The properties to configure the stack.
+   * @param {StackProps} props The properties to configure the stack.
    */
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    const discordKeySecret = new Secret(this, 'oculus-start-discord-api-key');
+    this.discordAPISecrets = new Secret(this, 'oculus-start-discord-api-key', {
+      secretName: `oculusStartDiscordSecrets${scope.node.addr}`,
+    });
+    new CfnOutput(this, 'discordSecretsName', {value: this.discordAPISecrets.secretName});
 
     // Create the Lambdas next.
     const discordBotLambda = new NodejsFunction(this, 'discord-bot-lambda', {
@@ -27,11 +32,11 @@ export class DiscordBotStack extends cdk.Stack {
       entry: path.join(__dirname, '../functions/DiscordBot.ts'),
       handler: 'handler',
       environment: {
-        DISCORD_BOT_API_KEY_NAME: discordKeySecret.secretName,
+        DISCORD_BOT_API_KEY_NAME: this.discordAPISecrets.secretName,
       },
     });
 
-    discordKeySecret.grantRead(discordBotLambda);
+    this.discordAPISecrets.grantRead(discordBotLambda);
 
     // Create our API Gateway
     const discordBotAPI = new RestApi(this, 'discord-bot-api', {

@@ -8,8 +8,9 @@ module.exports = {
     "!<rootDir>/node_modules/"
   ],
   coveragePathIgnorePatterns: [
-    'src/functions/constants',
-    'src/app.ts'
+    'src/app.ts',
+    'src/configs',
+    'src/functions/constants'
   ],
   coverageThreshold: {
     global: {

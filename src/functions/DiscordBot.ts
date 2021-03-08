@@ -2,6 +2,7 @@ import {Context, Callback} from 'aws-lambda';
 import {SecretsManager} from 'aws-sdk';
 import {discordBotAPIKeyName} from './constants/EnvironmentProps';
 import * as nacl from 'tweetnacl';
+import {DiscordSecrets} from '../types';
 
 export interface DiscordEventRequest {
     timestamp: string;
@@ -69,10 +70,11 @@ export async function verifyEvent(event: DiscordEventRequest): Promise<boolean> 
 
   try {
     if (discordAPIKey.SecretString) {
+      const discordSecrets: DiscordSecrets = JSON.parse(discordAPIKey.SecretString);
       const isVerified = nacl.sign.detached.verify(
           Buffer.from(event.timestamp + JSON.stringify(event.jsonBody)),
           Buffer.from(event.signature, 'hex'),
-          Buffer.from(discordAPIKey.SecretString, 'hex'),
+          Buffer.from(discordSecrets.publicKey, 'hex'),
       );
       return isVerified;
     }
