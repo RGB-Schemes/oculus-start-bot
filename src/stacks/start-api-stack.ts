@@ -42,8 +42,8 @@ export class StartAPIStack extends cdk.Stack {
     discordBotQueue.grantSendMessages(userAuthLambda);
 
     // Create our API Gateway
-    const discordBotAPI = new RestApi(this, 'discord-bot-api');
-    const discordBotAPIValidator = new RequestValidator(this, 'discord-bot-api-validator', {
+    const discordBotAPI = new RestApi(this, 'start-bot-api');
+    const discordBotAPIValidator = new RequestValidator(this, 'start-bot-api-validator', {
       restApi: discordBotAPI,
       validateRequestBody: true,
       validateRequestParameters: true

@@ -1,8 +1,15 @@
 module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
   collectCoverage: true,
   coverageDirectory: 'coverage',
+  collectCoverageFrom: [
+    "src/**/*.{js,jsx,ts,tsx}",
+    "!<rootDir>/node_modules/"
+  ],
   coveragePathIgnorePatterns: [
     'src/functions/constants',
+    'src/app.ts'
   ],
   coverageThreshold: {
     global: {
@@ -11,10 +18,5 @@ module.exports = {
       lines: 80,
       statements: 80
     }
-  },
-  roots: ['<rootDir>/test'],
-  testMatch: ['**/*.test.ts'],
-  transform: {
-    '^.+\\.tsx?$': 'ts-jest'
   }
 };

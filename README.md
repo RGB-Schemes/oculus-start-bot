@@ -1,5 +1,8 @@
 # Oculus Start Discord Bot
 
+[![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/oculus-start-bot__heads_main.json)]
+
+
 This project is for setting up the Oculus Start Discord Bot! Using it, you can develop for, deploy locally, and maintain the Oculus Start Bot. It is built using a combination of CDK (entirely in TypeScript) and a *small* bit of Python for the actual bot itself (serverless solutions for the bot's code are being investigated, but are cost prohibitive at the moment). It is currently maintained and deployed by **RGB Schemes** in order to help the Oculus Start program continue to grow, though we are attempting to work with Oculus to get this officially supported by them as well. You can learn more about the program and its benefits [here](https://developer.oculus.com/oculus-start/). We highly recommend other developers join!
 
 # Architecture Overview
@@ -52,6 +55,3 @@ Users can interact with the bot in one of two primary ways: Via Discord with var
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
  * `cdk synth`       emits the synthesized CloudFormation template
-
-# Known Issues
-- There is currently an issue when building with CDK on Windows where paths with spaces will break ESBuild. See [Issue #13311 in the aws-cdk repo](https://github.com/aws/aws-cdk/issues/13311) for details on this. You can find a simple fix [here](https://github.com/aws/aws-cdk/pull/13312) that you can apply to your local setup until it is merged in and a new version of CDK is released.

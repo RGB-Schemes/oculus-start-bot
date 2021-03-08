@@ -1,5 +1,4 @@
 import { Context, Callback } from 'aws-lambda';
-import { DynamoDB } from 'aws-sdk';
 
 const mockPutItem = {
     promise: jest.fn()
@@ -24,7 +23,7 @@ jest.mock('../../src/functions/utils/Users', () => {
         usersTable: mockDynamoDB,
         oculusHandleExists: mockOculusHandleExists,
         discordHandleExists: mockDiscordHandleExists
-    }
+    };
 });
 
 import * as UserAuth from '../../src/functions/UserAuth';
@@ -41,9 +40,6 @@ describe('Test UserAuth', () => {
         oculusHandle: 'Test',
         startTrack: 'Normal'
     };
-
-    beforeAll(() => {
-    });
 
     afterEach(() => {
         mockPutItem.promise.mockReset();
