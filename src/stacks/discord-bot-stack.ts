@@ -1,9 +1,14 @@
 import {Runtime} from '@aws-cdk/aws-lambda';
 import {LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
-import {CfnOutput, Construct, Stack, StackProps} from '@aws-cdk/core';
+import {CfnOutput, Construct, Duration, Stack, StackProps} from '@aws-cdk/core';
 import {Secret} from '@aws-cdk/aws-secretsmanager';
 import * as path from 'path';
+import {Table} from '@aws-cdk/aws-dynamodb';
+
+export interface DiscordBotStackProps extends StackProps {
+  usersTable: Table;
+}
 
 /**
  * A stack for creating the Discord bot itself. Creates an API Gateway endpoint
@@ -16,14 +21,12 @@ export class DiscordBotStack extends Stack {
    * The constructor for building the stack.
    * @param {Construct} scope The Construct scope to create the stack in.
    * @param {string} id The ID of the stack to use.
-   * @param {StackProps} props The properties to configure the stack.
+   * @param {DiscordBotStackProps} props The properties to configure the stack.
    */
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: DiscordBotStackProps) {
     super(scope, id, props);
 
-    this.discordAPISecrets = new Secret(this, 'oculus-start-discord-api-key', {
-      secretName: `oculusStartDiscordSecrets${scope.node.addr}`,
-    });
+    this.discordAPISecrets = new Secret(this, 'oculus-start-discord-api-key');
     new CfnOutput(this, 'discordSecretsName', {value: this.discordAPISecrets.secretName});
 
     // Create the Lambdas next.
@@ -32,10 +35,12 @@ export class DiscordBotStack extends Stack {
       entry: path.join(__dirname, '../functions/DiscordBot.ts'),
       handler: 'handler',
       environment: {
+        USERS_TABLE_NAME: props.usersTable.tableName,
         DISCORD_BOT_API_KEY_NAME: this.discordAPISecrets.secretName,
       },
+      timeout: Duration.seconds(60),
     });
-
+    props.usersTable.grantReadData(discordBotLambda);
     this.discordAPISecrets.grantRead(discordBotLambda);
 
     // Create our API Gateway

@@ -32,6 +32,122 @@ describe('Test Users Utils', () => {
         mockQuery.promise.mockReset();
     });
     
+    test('Verify Authorization - Success', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: [
+                {
+                    "oculusHandle": {
+                        "S": "Test"
+                    },
+                    "discordHandle": {
+                        "S": "Test#0001"
+                    },
+                    "startTrack": {
+                        "S": "normal"
+                    }
+                }
+            ],
+            Count: 1
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(true);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
+    });
+
+    test('Verify Authorization - Wrong Authorization Failure', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: [
+                {
+                    "oculusHandle": {
+                        "S": "Test"
+                    },
+                    "discordHandle": {
+                        "S": "Test#0001"
+                    },
+                    "startTrack": {
+                        "S": "none"
+                    }
+                }
+            ],
+            Count: 1
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
+    });
+
+    test('Verify Authorization - No Results Failure', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: [],
+            Count: 0
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
+    });
+
+    test('Verify Authorization - Undefined Results Failure', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: undefined,
+            Count: 1
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
+    });
+
+    test('Verify Authorization - Bad Authorization Type Failure', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: [
+                {
+                    "oculusHandle": {
+                        "S": "Test"
+                    },
+                    "discordHandle": {
+                        "S": "Test#0001"
+                    }
+                }
+            ],
+            Count: 1
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
+    });
+
+    test('Verify Authorization - Bad Item Failure', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: [
+                undefined
+            ],
+            Count: 1
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
+    });
+
+    test('Verify Authorization - Multiple Empty Results Success', async () => {
+        mockQuery.promise.mockResolvedValueOnce({
+            Items: [],
+            Count: 0,
+            LastEvaluatedKey: {
+                "discordHandle": "User#0001"
+            }
+        }).mockResolvedValueOnce({
+            Items: [
+                {
+                    "oculusHandle": {
+                        "S": "Test"
+                    },
+                    "discordHandle": {
+                        "S": "Test#0001"
+                    },
+                    "startTrack": {
+                        "S": "normal"
+                    }
+                }
+            ],
+            Count: 1
+        });
+        expect(await Users.isUserAuthorized('Test#0001')).toBe(true);
+        expect(mockDynamoDB.query().promise).toBeCalledTimes(2);
+    });
+
     test('Verify Oculus Handle - No Results Success', async() => {
         mockScan.promise.mockResolvedValueOnce({});
         expect(await Users.oculusHandleExists('Test')).toBe(false);

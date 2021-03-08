@@ -4,15 +4,7 @@ import {PutItemInput} from 'aws-sdk/clients/dynamodb';
 import {SendMessageRequest} from 'aws-sdk/clients/sqs';
 import {usersTableName, discordBotEventQueueURL} from './constants/EnvironmentProps';
 import {discordHandleExists, oculusHandleExists, usersTable} from './utils/Users';
-
-/**
- * The list of valid tracks that a developer can be on.
- */
-const START_TRACKS = [
-  'normal',
-  'growth',
-  'alumni',
-];
+import {START_TRACKS} from '../types';
 
 /**
  * A regular expression for validating Discord handle formats.

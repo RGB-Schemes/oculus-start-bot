@@ -9,6 +9,7 @@ module.exports = {
   ],
   coveragePathIgnorePatterns: [
     'src/app.ts',
+    'src/configure-discord-server.ts',
     'src/configs',
     'src/functions/constants'
   ],

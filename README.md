@@ -25,6 +25,9 @@ To deploy the infrastructure, you will want to do the following:
 }
 ```
 5. Run `npm run config`  - Sets up the Discord server's Slash Commands and other configuration properties. This uses your secrets configured above so that you can securely deploy everything.
+6. Going back into your AWS Account, add API Keys and associate them with the bot's API Gateway endpoints to authorize others to call the bots commands.
+
+At this stage, you should be able to use the bot on your server and use the various REST APIs! Note that there may be some time delays as things propogate through the system, so you may need to wait for some time (for example: Discord can be slow when updating the available Slash Commands).
 
 # Architecture Overview
 This is the architecture for how this project is laid out server-side. The tools used to create these diagrams are:

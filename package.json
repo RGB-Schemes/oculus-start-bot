@@ -14,7 +14,8 @@
     "cdk": "cdk",
     "synth": "cdk synth",
     "deploy": "cdk deploy --all --outputs-file dist/configs/outputs.json",
-    "config": "node dist/configure-discord-server.js"
+    "config": "node dist/configure-discord-server.js setup",
+    "reset": "node dist/configure-discord-server.js reset"
   },
   "devDependencies": {
     "@aws-cdk/assert": "1.92.0",

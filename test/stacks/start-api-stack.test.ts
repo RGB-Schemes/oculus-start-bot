@@ -1,4 +1,3 @@
-import { expect as expectCDK, matchTemplate, MatchStyle } from '@aws-cdk/assert';
 import * as cdk from '@aws-cdk/core';
 import '@aws-cdk/assert/jest';
 import * as StartAPI from '../../src/stacks/start-api-stack';

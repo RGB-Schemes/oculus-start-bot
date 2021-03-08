@@ -12,6 +12,8 @@ import * as path from 'path';
  * management, etc.)
  */
 export class StartAPIStack extends Stack {
+  public readonly usersTable: Table;
+
   /**
    * The constructor for building the stack.
    * @param {Construct} scope The Construct scope to create the stack in.
@@ -22,7 +24,7 @@ export class StartAPIStack extends Stack {
     super(scope, id, props);
 
     // Create our DynamoDB tables first.
-    const usersTable = new Table(this, 'user-auth-table', {
+    this.usersTable = new Table(this, 'user-auth-table', {
       partitionKey: {
         name: 'discordHandle',
         type: AttributeType.STRING,
@@ -45,11 +47,11 @@ export class StartAPIStack extends Stack {
       entry: path.join(__dirname, '../functions/UserAuth.ts'),
       handler: 'handler',
       environment: {
-        USERS_TABLE_NAME: usersTable.tableName,
+        USERS_TABLE_NAME: this.usersTable.tableName,
         DISCORD_BOT_EVENT_QUEUE: discordBotQueue.queueUrl,
       },
     });
-    usersTable.grantReadWriteData(userAuthLambda);
+    this.usersTable.grantReadWriteData(userAuthLambda);
     discordBotQueue.grantSendMessages(userAuthLambda);
 
     // Create our API Gateway
