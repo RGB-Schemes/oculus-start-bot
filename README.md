@@ -1,6 +1,6 @@
 # Oculus Start Discord Bot
 
-[![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/8aede241973d4ac43185abab96ee295134494f45/oculus-start-bot__heads_mainline.json)]
+![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/oculus-start-bot__heads_mainline.json)
 
 
 This project is for setting up the Oculus Start Discord Bot! Using it, you can develop for, deploy locally, and maintain the Oculus Start Bot. It is built using a combination of CDK (entirely in TypeScript) and a *small* bit of Python for the actual bot itself (serverless solutions for the bot's code are being investigated, but are cost prohibitive at the moment). It is currently maintained and deployed by **RGB Schemes** in order to help the Oculus Start program continue to grow, though we are attempting to work with Oculus to get this officially supported by them as well. You can learn more about the program and its benefits [here](https://developer.oculus.com/oculus-start/). We highly recommend other developers join!
