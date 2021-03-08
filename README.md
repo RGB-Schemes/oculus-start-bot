@@ -1,11 +1,16 @@
 # Oculus Start Discord Bot
 
-![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/oculus-start-bot__heads_mainline.json)
+![Version Badge](https://img.shields.io/github/package-json/v/RGB-Schemes/oculus-start-bot?color=blue&logo=oculus) ![Build Status Badge](https://img.shields.io/github/workflow/status/RGB-Schemes/oculus-start-bot/Build%20Status?logo=node.js) ![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/oculus-start-bot__heads_mainline.json)
 
 
-This project is for setting up the Oculus Start Discord Bot! Using it, you can develop for, deploy locally, and maintain the Oculus Start Bot. It is built using a combination of CDK (entirely in TypeScript) and a *small* bit of Python for the actual bot itself (serverless solutions for the bot's code are being investigated, but are cost prohibitive at the moment). It is currently maintained and deployed by **RGB Schemes** in order to help the Oculus Start program continue to grow, though we are attempting to work with Oculus to get this officially supported by them as well. You can learn more about the program and its benefits [here](https://developer.oculus.com/oculus-start/). We highly recommend other developers join!
+This project is for setting up the Oculus Start Discord Bot! Using it, you can develop for, deploy locally, and maintain the Oculus Start Bot. It is built with CDK (entirely in TypeScript). It is currently maintained and deployed by **RGB Schemes** in order to help the Oculus Start program continue to grow, though we are attempting to work with Oculus to get this officially supported by them as well. You can learn more about the program and its benefits [here](https://developer.oculus.com/oculus-start/). We highly recommend other developers join!
 
 # Architecture Overview
+This is the architecture for how this project is laid out server-side. The tools used to create these diagrams are:
+- [Architecture Diagrams](https://app.diagrams.net)
+- [Sequence Diagrams](https://sequencediagram.org)
+
+
 The Oculus Start Discord Bot is architectured around a serverless design, allowing for it to be both low cost and highly scalable. It is built using the CDK (Cloud Development Kit) by AWS (Amazon Web Services), and thus is run entirely on AWS. This ensures no downtimes and low costs, as well as high scalability.
 ![The architecture diagram for the project.](diagrams/architecture.png?raw=true)
 
@@ -47,11 +52,16 @@ Users can interact with the bot in one of two primary ways: Via Discord with var
 ## Discord Bot - Register for Event
 ![Registering for an event on Discord](diagrams/discord-event-registration.png?raw=true)
 
+# Contributing
+When contributing, you will want to fork this project, and make your changes in your fork of this, after which you can submit a pull request to merge your changes back into the project. Please ensure that the unit tests still pass (and that you've added any additional ones to maintain good code coverage), and ensure that you have verified you are following the lint rules that have been setup. For commands to help with each of these things, see the next section.
+
 # Useful commands
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+ * `npm run build`      compile typescript to js
+ * `npm run watch`      watch for changes and compile
+ * `npm run test`       perform the jest unit tests
+ * `npm run lint`       perform a lint check across the code
+ * `npm run fix-lint`   fix any lint issues automatically where possible
+ * `cdk deploy`         deploy this stack to your default AWS account/region
+ * `cdk diff`           compare deployed stack with current state
+ * `cdk synth`          emits the synthesized CloudFormation template

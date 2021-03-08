@@ -6,8 +6,6 @@ name: Build Status
 on:
   push:
     branches: [ mainline ]
-  pull_request:
-    branches: [ mainline ]
 
 jobs:
   build:
