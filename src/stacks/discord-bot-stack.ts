@@ -61,7 +61,7 @@ export class DiscordBotStack extends cdk.Stack {
         'application/json': '{\r\n\
               "timestamp": "$input.params(\'x-signature-timestamp\')",\r\n\
               "signature": "$input.params(\'x-signature-ed25519\')",\r\n\
-              "body_json" : $input.json(\'$\')\r\n\
+              "jsonBody" : $input.json(\'$\')\r\n\
             }',
       },
       integrationResponses: [

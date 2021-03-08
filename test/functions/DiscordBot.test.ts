@@ -46,7 +46,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.verifyEvent({
             timestamp: '',
             signature: '',
-            body_json: {}
+            jsonBody: {}
         });
 
         expect(mockGetSecretValuePromise.promise).toBeCalledTimes(1);
@@ -62,7 +62,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.verifyEvent({
             timestamp: '',
             signature: '',
-            body_json: {}
+            jsonBody: {}
         });
 
         expect(mockGetSecretValuePromise.promise).toBeCalledTimes(1);
@@ -77,7 +77,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.verifyEvent({
             timestamp: '',
             signature: '',
-            body_json: {}
+            jsonBody: {}
         });
 
         expect(mockGetSecretValuePromise.promise).toBeCalledTimes(1);
@@ -96,7 +96,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.verifyEvent({
             timestamp: '',
             signature: '',
-            body_json: {}
+            jsonBody: {}
         });
 
         expect(mockGetSecretValuePromise.promise).toBeCalledTimes(1);
@@ -112,7 +112,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.handler({
             timestamp: '',
             signature: '',
-            body_json: {}
+            jsonBody: {}
         }, (null as unknown) as Context, (null as unknown) as Callback);
 
         expect(result).toEqual({
@@ -134,7 +134,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.handler(({
             timestamp: '',
             signature: '',
-            body_json: {}
+            jsonBody: {}
         } as unknown) as DiscordBot.DiscordEventRequest, (null as unknown) as Context, (null as unknown) as Callback);
 
         expect(result).toEqual({
@@ -156,7 +156,7 @@ describe('Test DiscordBot', () => {
         const result = await DiscordBot.handler({
             timestamp: '',
             signature: '',
-            body_json: {
+            jsonBody: {
                 type: 1
             }
         }, (null as unknown) as Context, (null as unknown) as Callback);
@@ -175,7 +175,7 @@ describe('Test DiscordBot', () => {
             await DiscordBot.handler({
                 timestamp: '',
                 signature: '',
-                body_json: {}
+                jsonBody: {}
             }, (null as unknown) as Context, (null as unknown) as Callback);
         }).rejects.toThrow(Error);
     });
