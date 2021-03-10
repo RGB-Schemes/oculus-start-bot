@@ -70,10 +70,10 @@ A user's projects are formatted as a JSON document. As an example project:
 # User Flow Diagrams
 Users can interact with the bot in one of two primary ways: Via Discord with various commands from the bot, or via a website that uses the API endpoints. **As of this moment, the bot only accessible via the Discord commands. The user flows for the website examples are for potential future additions.**
 
-## User Authentication
+## Website - User Authentication Example
 ![User authentication flow diagram](diagrams/user-auth.png?raw=true)
 
-## Discord Bot - Register for Event
+## Discord Bot - Register for Event Example
 ![Registering for an event on Discord](diagrams/discord-event-registration.png?raw=true)
 
 # Contributing

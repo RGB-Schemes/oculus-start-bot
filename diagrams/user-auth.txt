@@ -5,11 +5,9 @@ participant Oculus Start Website
 participant Authorize Discord Handle API Endpoint
 participant Start Member Authorization Lambda
 participant Users DynamoDB Table
-participant Authenticated User Updates
-participant Discord Bot Lambda
 participant Discord
 
-Start Member-->Oculus Start Website:Signs into their Discord account to link it to their Oculus account. Then clicks a "Join Discord Server" button on the website.
+Start Member-->Oculus Start Website:Signs into their Discord account to link it to their Oculus account.\nThen clicks a "Join Discord Server" button on the website.
 Oculus Start Website->Oculus Start Website:Verify Oculus Start membership
 
 alt If the user is NOT a member of Oculus Start
@@ -22,29 +20,26 @@ Authorize Discord Handle API Endpoint-->Start Member Authorization Lambda:{\n   
 
 Start Member Authorization Lambda-->Users DynamoDB Table:scan\n{\n    oculusHandle: "ABC"\n}
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
+Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify.\nThis means continuing to scan for the Oculus handle if the responses are too large.
 Start Member Authorization Lambda-->Users DynamoDB Table:query\n{\n    discordHandle: "ABC#0001"\n}
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
-Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify and that the Discord handle is not already registered.\nThis means continuing to scan for the Discord handle if the responses are too large.
-Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify.\nThis means continuing to scan for the Discord handle if the responses are too large.
+Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Discord handle has not been previously used to verify.\nThis means continuing to query for the Discord handle if the responses are too large.
 
-alt If Oculus handle has NOT been previously used
+alt If Oculus and Discord handle has NOT been previously used
 Start Member Authorization Lambda-->Users DynamoDB Table:putItem\n{\n    discordHandle: "ABC#0001",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
 
 Users DynamoDB Table->Start Member Authorization Lambda: Success
+Start Member Authorization Lambda->Discord:Update user to have new role and proper server permissions..
 Start Member Authorization Lambda->Authorize Discord Handle API Endpoint:{\n    statusCode: 200,\n    errorMessage: undefined\n}
 Authorize Discord Handle API Endpoint->Oculus Start Website:{\n    statusCode: 200,\n    errorMessage: undefined\n}
 Oculus Start Website->Start Member: Users gets sent to the Discord server via a page redirect.
 
-Users DynamoDB Table->Authenticated User Updates:{\n    QueueURL: "sqsQueue",\n    MessageAttributes: {\n        "EventType": {\n            DataType: "String",\n            StringValue: "NewMember"\n        },\n        "Publisher": {\n            DataType: "String",\n            StringValue: "AuthAPILambda"\n        }\n    }\n    MessageBody: JSON.stringify({\n        discordHandle: "ABC#0001",\n        startStrack: "Normal"\n    })\n}
-Discord Bot Lambda-->Authenticated User Updates:Check for any "NewMember" events
-Authenticated User Updates->Discord Bot Lambda:{\n    message_attributes: {\n        "EventType": {\n            DataType: "String",\n            StringValue: "NewMember"\n        },\n        "Publisher": {\n            DataType: "String",\n            StringValue: "AuthAPILambda"\n        }\n    }\n    body: JSON.stringify({\n        discordHandle: "ABC#0001",\n        startStrack: "Normal"\n    })\n}
-Discord Bot Lambda->Discord:Update user to have new role and proper server permissions..
 end
 
-alt If Oculus handle HAS been previously used
+alt If Oculus or Discord handle HAS been previously used
 
-Start Member Authorization Lambda->Authorize Discord Handle API Endpoint:{\n    statusCode: 409,\n    errorMessage: "The Oculus handle provided has already been used to verify a Discord handle."\n}
-Authorize Discord Handle API Endpoint->Oculus Start Website:{\n    statusCode: 409,\n    errorMessage: "The Oculus handle provided has already been used to verify a Discord handle."\n}
+Start Member Authorization Lambda->Authorize Discord Handle API Endpoint:{\n    statusCode: 409,\n    errorMessage: "The handle provided has already been authorized."\n}
+Authorize Discord Handle API Endpoint->Oculus Start Website:{\n    statusCode: 409,\n    errorMessage: "The handle provided has already been authorized."\n}
 Oculus Start Website->Start Member:Displays an error to the user.
 end
 end 
