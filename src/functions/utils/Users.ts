@@ -1,7 +1,7 @@
 import { QueryInput, QueryOutput, ScanInput } from 'aws-sdk/clients/dynamodb';
 import { DynamoDB } from 'aws-sdk';
 import { usersTableName } from '../constants/EnvironmentProps';
-import { START_TRACKS } from '../../types';
+import { START_TRACKS } from '../constants/DiscordServerProps';
 
 /**
  * The actual table instance for the users to read and write from.

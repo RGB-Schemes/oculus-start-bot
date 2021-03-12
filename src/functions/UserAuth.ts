@@ -1,10 +1,9 @@
 import {Context, Callback} from 'aws-lambda';
-import {SQS} from 'aws-sdk';
 import {PutItemInput} from 'aws-sdk/clients/dynamodb';
-import {SendMessageRequest} from 'aws-sdk/clients/sqs';
-import {usersTableName, discordBotEventQueueURL} from './constants/EnvironmentProps';
+import {usersTableName} from './constants/EnvironmentProps';
 import {discordHandleExists, oculusHandleExists, usersTable} from './utils/Users';
-import {START_TRACKS} from '../types';
+import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
+import {getDiscordMember, setMemberRole} from './utils/Discord';
 
 /**
  * A regular expression for validating Discord handle formats.
@@ -12,8 +11,6 @@ import {START_TRACKS} from '../types';
 const discordRegex = new RegExp(
     '^((?!discordtag|everyone|here)[^@#:```]){2,32}#[0-9]{4}$',
 );
-
-const discordBotEventQueue = new SQS();
 
 export interface UserAuthRequest {
     discordHandle: string;
@@ -51,6 +48,14 @@ export async function handler(event: UserAuthRequest, context: Context, callback
       };
     }
 
+    const discordMember = await getDiscordMember(event.discordHandle);
+    if (discordMember == undefined) {
+      return {
+        statusCode: 409,
+        errorMessage: `The Discord member ${event.discordHandle} is not in the server!`,
+      };
+    }
+
     if (await discordHandleExists(event.discordHandle)) {
       return {
         statusCode: 409,
@@ -81,27 +86,17 @@ export async function handler(event: UserAuthRequest, context: Context, callback
     };
     try {
       await usersTable.putItem(putParams).promise();
-      const successQueueInput: SendMessageRequest = {
-        QueueUrl: discordBotEventQueueURL,
-        MessageAttributes: {
-          'EventType': {
-            DataType: 'String',
-            StringValue: 'NewMember',
-          },
-          'Publisher': {
-            DataType: 'String',
-            StringValue: 'AuthAPILambda',
-          },
-        },
-        MessageBody: JSON.stringify({
-          discordHandle: event.discordHandle,
-          startTrack: event.startTrack.toLowerCase(),
-        }),
-      };
-      await discordBotEventQueue.sendMessage(successQueueInput).promise();
-      return {
-        statusCode: 200,
-      };
+
+      if (await setMemberRole(discordMember, ROLE_MAP[event.startTrack.toLowerCase()])) {
+        return {
+          statusCode: 200,
+        };
+      } else {
+        return {
+          statusCode: 500,
+          errorMessage: 'There was an error setting the user\'s role!',
+        };
+      }
     } catch (err) {
       console.log(`An error occurred when adding the new user: ${err}`);
       return {

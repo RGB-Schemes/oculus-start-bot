@@ -7,14 +7,6 @@ const mockDynamoDB = {
     putItem: jest.fn(() => mockPutItem)
 };
 
-const mockSendMessage = {
-    promise: jest.fn()
-}
-
-const mockSQS = {
-    sendMessage: jest.fn(() => mockSendMessage)
-}
-
 const mockOculusHandleExists = jest.fn().mockReturnValue(false);
 const mockDiscordHandleExists = jest.fn().mockReturnValue(false);
 
@@ -26,11 +18,22 @@ jest.mock('../../src/functions/utils/Users', () => {
     };
 });
 
+const mockSetMemberRole = jest.fn().mockReturnValue(false);
+const mockGetDiscordMember = jest.fn().mockReturnValue(undefined);
+
+jest.mock('../../src/functions/utils/Discord', () => {
+    return {
+        setMemberRole: mockSetMemberRole,
+        getDiscordMember: mockGetDiscordMember
+    }
+});
+
 import * as UserAuth from '../../src/functions/UserAuth';
+import { DiscordMember } from '../../src/types';
 
 jest.mock('aws-sdk', () => {
     return {
-        SQS: jest.fn(() => mockSQS),
+        SecretsManager: jest.fn()
     };
 });
 
@@ -45,16 +48,29 @@ describe('Test UserAuth', () => {
         mockPutItem.promise.mockReset();
         mockOculusHandleExists.mockReset();
         mockDiscordHandleExists.mockReset();
+        mockSetMemberRole.mockReset();
+        mockGetDiscordMember.mockReset();
     });
 
     test('Test Handle New User - Success', async() => {
+        mockSetMemberRole.mockReturnValueOnce(true);
+        mockGetDiscordMember.mockReturnValueOnce({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        } as DiscordMember);
         expect(await UserAuth.handler(inputParams, (null as unknown) as Context, (null as unknown) as Callback)).toStrictEqual({
             statusCode: 200
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(1);
-        expect(mockSendMessage.promise).toHaveBeenCalledTimes(1);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(1);
     });
 
     test('Test Handle New User - Invalid Event Failure', async() => {
@@ -63,8 +79,10 @@ describe('Test UserAuth', () => {
             errorMessage: 'Invalid inputs given for the request.'
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(0);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
 
     test('Test Handle New User - Oculus User Already Registered Failure', async() => {
@@ -78,8 +96,10 @@ describe('Test UserAuth', () => {
             errorMessage: 'This user has already registered their Discord handle before!'
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
 
     test('Test Handle New User - Discord User Invalid Format Failure', async() => {
@@ -91,12 +111,37 @@ describe('Test UserAuth', () => {
             errorMessage: `'Test0001' is not a valid Discord handle!`
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
+    });
+
+    test('Test Handle New User - Discord User Not on Server Failure', async () => {
+        mockSetMemberRole.mockReturnValueOnce(true);
+        mockGetDiscordMember.mockReturnValueOnce(undefined);
+        expect(await UserAuth.handler(inputParams, (null as unknown) as Context, (null as unknown) as Callback)).toStrictEqual({
+            statusCode: 409,
+            errorMessage: `The Discord member ${inputParams.discordHandle} is not in the server!`
+        });
+        expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
+        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
+        expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
 
     test('Test Handle New User - Discord User Already Registered Failure', async() => {
         mockDiscordHandleExists.mockReturnValueOnce(true);
+        mockGetDiscordMember.mockReturnValueOnce({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        } as DiscordMember);
         expect(await UserAuth.handler({
             discordHandle: 'Test#0001',
             oculusHandle: 'Test',
@@ -106,11 +151,22 @@ describe('Test UserAuth', () => {
             errorMessage: 'This Discord user is already registered!'
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
 
     test('Test Handle New User - Invalid Start Track Failure', async() => {
+        mockGetDiscordMember.mockReturnValueOnce({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        } as DiscordMember);
         expect(await UserAuth.handler({
             ...inputParams,
             startTrack: 'invalid'
@@ -119,11 +175,22 @@ describe('Test UserAuth', () => {
             errorMessage: `The Start Track 'invalid' is not valid!`
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
 
     test('Test Handle New User - DynamoDB Failure', async() => {
+        mockGetDiscordMember.mockReturnValueOnce({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        } as DiscordMember);
         mockPutItem.promise.mockImplementationOnce(() => {
             throw new Error();
         });
@@ -132,7 +199,31 @@ describe('Test UserAuth', () => {
             errorMessage: 'There was an adding the new user!'
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
         expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(1);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
+    });
+
+    test('Test Handle New User - Set Discord Role Failure', async () => {
+        mockSetMemberRole.mockReturnValueOnce(false);
+        mockGetDiscordMember.mockReturnValueOnce({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        } as DiscordMember);
+        expect(await UserAuth.handler(inputParams, (null as unknown) as Context, (null as unknown) as Callback)).toStrictEqual({
+            statusCode: 500,
+            errorMessage: 'There was an error setting the user\'s role!'
+        });
+        expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
+        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockPutItem.promise).toHaveBeenCalledTimes(1);
+        expect(mockSetMemberRole).toHaveBeenCalledTimes(1);
     });
 });

@@ -1,33 +1,21 @@
 import {Context, Callback} from 'aws-lambda';
-import {SecretsManager} from 'aws-sdk';
-import {discordBotAPIKeyName} from './constants/EnvironmentProps';
 import * as nacl from 'tweetnacl';
-import {DiscordSecrets} from '../types';
+import {DiscordMember} from '../types';
 import {isUserAuthorized} from './utils/Users';
 import {Embed} from 'slash-commands';
+import {getDiscordSecrets} from './utils/DiscordSecrets';
 
 export interface DiscordEventRequest {
   timestamp: string;
   signature: string;
-  jsonBody: DiscordRequestJsonBody;
+  jsonBody: DiscordJsonBody;
 }
 
-export interface DiscordRequestJsonBody {
+export interface DiscordJsonBody {
   data?: DiscordRequestData;
-  member?: DiscordRequestMember;
+  member?: DiscordMember;
   type: number;
   version: number;
-}
-
-export interface DiscordRequestMember {
-  deaf: boolean;
-  roles: string[];
-  user: DiscordRequestUser;
-}
-
-export interface DiscordRequestUser {
-  username: string;
-  discriminator: string;
 }
 
 export interface DiscordRequestData {
@@ -48,8 +36,6 @@ export interface DiscordResponseData {
     allowed_mentions: string[];
     /* eslint-enable camelcase */
 }
-
-const secretsManager = new SecretsManager();
 
 /**
  * Handles incoming events from the Discord bot.
@@ -95,25 +81,18 @@ export async function handler(event: DiscordEventRequest, context: Context,
  * @return {boolean} Returns true if the event was verified, false otherwise.
  */
 export async function verifyEvent(event: DiscordEventRequest): Promise<boolean> {
-  const discordAPIKey = await secretsManager.getSecretValue({
-    SecretId: discordBotAPIKeyName,
-  }).promise();
-
   try {
-    if (discordAPIKey.SecretString) {
-      const discordSecrets: DiscordSecrets = JSON.parse(discordAPIKey.SecretString);
-      const isVerified = nacl.sign.detached.verify(
-          Buffer.from(event.timestamp + JSON.stringify(event.jsonBody)),
-          Buffer.from(event.signature, 'hex'),
-          Buffer.from(discordSecrets.publicKey, 'hex'),
-      );
-      return isVerified;
-    }
+    const isVerified = nacl.sign.detached.verify(
+        Buffer.from(event.timestamp + JSON.stringify(event.jsonBody)),
+        Buffer.from(event.signature, 'hex'),
+        Buffer.from((await getDiscordSecrets())?.publicKey ?? '', 'hex'),
+    );
+    console.log('returning verification');
+    return isVerified;
   } catch (exception) {
     console.log(exception);
+    return false;
   }
-
-  return false;
 }
 
 /**

@@ -3,8 +3,12 @@ import {Runtime} from '@aws-cdk/aws-lambda';
 import {LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
 import {Construct, Stack, StackProps} from '@aws-cdk/core';
-import {Queue} from '@aws-cdk/aws-sqs';
 import * as path from 'path';
+import {Secret} from '@aws-cdk/aws-secretsmanager';
+
+export interface StartAPIStackProps extends StackProps {
+  discordAPISecrets: Secret;
+}
 
 /**
  * Creates the APIs and code behind them for managing various
@@ -18,9 +22,9 @@ export class StartAPIStack extends Stack {
    * The constructor for building the stack.
    * @param {Construct} scope The Construct scope to create the stack in.
    * @param {string} id The ID of the stack to use.
-   * @param {StackProps} props The properties to configure the stack.
+   * @param {StartAPIStackProps} props The properties to configure the stack.
    */
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: StartAPIStackProps) {
     super(scope, id, props);
 
     // Create our DynamoDB tables first.
@@ -38,21 +42,18 @@ export class StartAPIStack extends Stack {
     //   },
     // });
 
-    // Next up: SQS Queue for the Discord bot to consume.
-    const discordBotQueue = new Queue(this, 'discord-bot-event-queue');
-
     // Create the Lambdas next.
     const userAuthLambda = new NodejsFunction(this, 'user-auth-lambda', {
       runtime: Runtime.NODEJS_14_X,
       entry: path.join(__dirname, '../functions/UserAuth.ts'),
       handler: 'handler',
       environment: {
+        DISCORD_BOT_API_KEY_NAME: props.discordAPISecrets.secretName,
         USERS_TABLE_NAME: this.usersTable.tableName,
-        DISCORD_BOT_EVENT_QUEUE: discordBotQueue.queueUrl,
       },
     });
     this.usersTable.grantReadWriteData(userAuthLambda);
-    discordBotQueue.grantSendMessages(userAuthLambda);
+    props.discordAPISecrets.grantRead(userAuthLambda);
 
     // Create our API Gateway
     const discordBotAPI = new RestApi(this, 'start-bot-api');

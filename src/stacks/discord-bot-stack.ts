@@ -8,6 +8,7 @@ import {Table} from '@aws-cdk/aws-dynamodb';
 
 export interface DiscordBotStackProps extends StackProps {
   usersTable: Table;
+  discordAPISecrets: Secret;
 }
 
 /**
