@@ -302,6 +302,7 @@ describe('Test DiscordBot', () => {
                     roles: [],
                     deaf: false,
                     user: {
+                        id: 1,
                         username: 'Test',
                         discriminator: '0001'
                     }
@@ -333,6 +334,7 @@ describe('Test DiscordBot', () => {
                     roles: [],
                     deaf: false,
                     user: {
+                        id: 1,
                         username: 'Test',
                         discriminator: '0001'
                     }
@@ -368,6 +370,7 @@ describe('Test DiscordBot', () => {
                     roles: [],
                     deaf: false,
                     user: {
+                        id: 1,
                         username: 'Test',
                         discriminator: '0001'
                     }
@@ -403,6 +406,7 @@ describe('Test DiscordBot', () => {
                     roles: [],
                     deaf: false,
                     user: {
+                        id: 1,
                         username: 'Test',
                         discriminator: '0001'
                     }
