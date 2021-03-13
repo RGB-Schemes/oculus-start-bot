@@ -25,6 +25,7 @@ test('Test all stacks', () => {
     expect(startAPIStack).toHaveResource('AWS::Lambda::Function');
     expect(startAPIStack).toHaveResource('AWS::ApiGateway::RestApi');
     expect(startAPIStack).toHaveResource('AWS::Route53::RecordSet');
+    expect(startAPIStack).toHaveResource('AWS::ApiGateway::UsagePlan');
 
     const discordBotStack = new DiscordBot.DiscordBotStack(app, 'DiscordBotStack', {
         discordAPISecrets: discordConfigStack.discordAPISecrets,

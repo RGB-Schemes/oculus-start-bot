@@ -115,5 +115,13 @@ export class StartAPIStack extends Stack {
         'method.request.querystring.startTrack': true,
       },
     });
+
+    // Setup the usage plans here. Don't add any API keys though! Those should be manually added!
+    const startApiUsagePlan = startAPI.addUsagePlan('startApiUsagePlan', {
+      name: 'Start API Usage Plan',
+    });
+    startApiUsagePlan.addApiStage({
+      stage: startAPI.deploymentStage,
+    });
   }
 }
