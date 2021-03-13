@@ -12,3 +12,4 @@ cdk.out
 dist
 coverage
 outputs.json
+cdk.context.json
