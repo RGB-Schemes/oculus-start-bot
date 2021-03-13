@@ -2,16 +2,17 @@ import { QueryInput, QueryOutput, ScanInput } from 'aws-sdk/clients/dynamodb';
 import { DynamoDB } from 'aws-sdk';
 import { usersTableName } from '../constants/EnvironmentProps';
 import { START_TRACKS } from '../constants/DiscordServerProps';
+import { DiscordMember } from '../../types';
 
 /**
  * The actual table instance for the users to read and write from.
  */
 export const usersTable = new DynamoDB();
 
-function hasAuthorizedResults(discordHandle: string, queryResults: QueryOutput, authorizedRoles: string[]): boolean {
+function hasAuthorizedResults(discordMember: DiscordMember, queryResults: QueryOutput, authorizedRoles: string[]): boolean {
     if (queryResults.Count && queryResults.Count > 0) {
         const hasResult = queryResults.Items?.map(item => {
-            return item?.discordHandle?.S == discordHandle &&
+            return item?.discordMemberId?.S == `${discordMember.user.id}` &&
                 item.oculusHandle.S &&
                 authorizedRoles.includes(item.startTrack?.S ?? 'does-not-exist');
         }).filter(x => x).length;
@@ -21,26 +22,26 @@ function hasAuthorizedResults(discordHandle: string, queryResults: QueryOutput, 
 }
 
 /**
- * Checks if a user is authorized for a desired role.
- * @param {string} discordHandle The Discord handle to see if it is authorized.
+ * Checks if a Discord member is authorized for a desired role.
+ * @param {DiscordMember} discordMember The Discord member to see if they are authorized.
  * @param {string[]} authorizedRoles The roles that the user must be authorized for at least one of.
  * @returns Returns true if the user is authorized for the chosen role, false otherwise.
  */
-export async function isUserAuthorized(discordHandle: string,
+export async function isUserAuthorized(discordMember: DiscordMember,
     authorizedRoles: string[] = START_TRACKS) {
     var queryParams: QueryInput = {
         TableName: usersTableName,
-        KeyConditionExpression: 'discordHandle = :discordHandle',
+        KeyConditionExpression: 'discordMemberId = :discordMemberId',
         ExpressionAttributeValues: {
-            ':discordHandle': {
-                S: discordHandle
+            ':discordMemberId': {
+                S: `${discordMember.user.id}`
             }
         },
-        ProjectionExpression: 'oculusHandle, discordHandle, startTrack'
+        ProjectionExpression: 'oculusHandle, discordMemberId, startTrack'
     };
     var queryResults = await usersTable.query(queryParams).promise();
     do {
-        if (hasAuthorizedResults(discordHandle, queryResults, authorizedRoles)) {
+        if (hasAuthorizedResults(discordMember, queryResults, authorizedRoles)) {
             return true;
         }
         if (queryResults.LastEvaluatedKey) {
@@ -49,7 +50,7 @@ export async function isUserAuthorized(discordHandle: string,
         }
     } while (queryResults.LastEvaluatedKey)
 
-    return hasAuthorizedResults(discordHandle, queryResults, authorizedRoles);
+    return hasAuthorizedResults(discordMember, queryResults, authorizedRoles);
 }
 
 /**
@@ -65,7 +66,7 @@ export async function oculusHandleExists(oculusHandle: string): Promise<boolean>
                 S: oculusHandle
             }
         },
-        ProjectionExpression: 'oculusHandle, discordHandle'
+        ProjectionExpression: 'oculusHandle, discordMemberId'
     };
     var scanResults = await usersTable.scan(scanParams).promise();
     do {
@@ -83,18 +84,18 @@ export async function oculusHandleExists(oculusHandle: string): Promise<boolean>
 
 /**
  * Checks to see if a Discord handle has already been registered.
- * @param discordHandle The Discord handle to check and see if has already been registered.
+ * @param {DiscordMember} discordMember The Discord handle to check and see if has already been registered.
  */
-export async function discordHandleExists(discordHandle: string): Promise<boolean> {
+export async function discordMemberExists(discordMember: DiscordMember): Promise<boolean> {
     var queryParams: QueryInput = {
         TableName: usersTableName,
-        KeyConditionExpression: 'discordHandle = :discordHandle',
+        KeyConditionExpression: 'discordMemberId = :discordMemberId',
         ExpressionAttributeValues: {
-            ':discordHandle': {
-                S: discordHandle
+            ':discordMemberId': {
+                S: `${discordMember.user.id}`
             }
         },
-        ProjectionExpression: 'oculusHandle, discordHandle'
+        ProjectionExpression: 'oculusHandle, discordMemberId'
     };
     var queryResults = await usersTable.query(queryParams).promise();
     do {

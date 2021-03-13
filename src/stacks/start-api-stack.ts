@@ -30,7 +30,7 @@ export class StartAPIStack extends Stack {
     // Create our DynamoDB tables first.
     this.usersTable = new Table(this, 'user-auth-table', {
       partitionKey: {
-        name: 'discordHandle',
+        name: 'discordMemberId',
         type: AttributeType.STRING,
       },
     });
@@ -56,8 +56,8 @@ export class StartAPIStack extends Stack {
     props.discordAPISecrets.grantRead(userAuthLambda);
 
     // Create our API Gateway
-    const discordBotAPI = new RestApi(this, 'start-bot-api');
-    const discordBotAPIValidator = new RequestValidator(this, 'start-bot-api-validator', {
+    const discordBotAPI = new RestApi(this, 'start-api');
+    const discordBotAPIValidator = new RequestValidator(this, 'start-api-validator', {
       restApi: discordBotAPI,
       validateRequestBody: true,
       validateRequestParameters: true,

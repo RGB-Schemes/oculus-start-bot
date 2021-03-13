@@ -104,9 +104,7 @@ export async function handleCommand(event: DiscordEventRequest): Promise<Discord
   if (event.jsonBody.member) {
     switch (event.jsonBody.data?.name) {
       case 'hello-world':
-        const username = (event.jsonBody.member.user.username) +
-          '#' + (event.jsonBody.member.user.discriminator);
-        if (await isUserAuthorized(username)) {
+        if (await isUserAuthorized(event.jsonBody.member)) {
           return generateStandardResponse(`Hello ${event.jsonBody.member.user.username}!`);
         } else {
           return generateStandardResponse(`You are not authorized for that command ` +

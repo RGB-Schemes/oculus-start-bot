@@ -39,8 +39,8 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     },
                     "startTrack": {
                         "S": "normal"
@@ -49,7 +49,15 @@ describe('Test Users Utils', () => {
             ],
             Count: 1
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(true);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(true);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -60,8 +68,8 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     },
                     "startTrack": {
                         "S": "none"
@@ -70,7 +78,15 @@ describe('Test Users Utils', () => {
             ],
             Count: 1
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -79,7 +95,15 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -88,7 +112,15 @@ describe('Test Users Utils', () => {
             Items: undefined,
             Count: 1
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -99,14 +131,22 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     }
                 }
             ],
             Count: 1
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -117,7 +157,15 @@ describe('Test Users Utils', () => {
             ],
             Count: 1
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(false);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -126,7 +174,7 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0,
             LastEvaluatedKey: {
-                "discordHandle": "User#0001"
+                "discordMemberId": "5555"
             }
         }).mockResolvedValueOnce({
             Items: [
@@ -134,8 +182,8 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     },
                     "startTrack": {
                         "S": "normal"
@@ -144,7 +192,15 @@ describe('Test Users Utils', () => {
             ],
             Count: 1
         });
-        expect(await Users.isUserAuthorized('Test#0001')).toBe(true);
+        expect(await Users.isUserAuthorized({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(true);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(2);
     });
 
@@ -168,7 +224,7 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0,
             LastEvaluatedKey: {
-                "discordHandle": "User#0001"
+                "discordMemberId": "1111"
             }
         }).mockResolvedValueOnce({
             Items: [],
@@ -185,8 +241,8 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     }
                 }
             ],
@@ -201,7 +257,7 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0,
             LastEvaluatedKey: {
-                "discordHandle": "User#0001"
+                "discordMemberId": "5555"
             }
         }).mockResolvedValueOnce({
             Items: [
@@ -209,8 +265,8 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     }
                 }
             ],
@@ -222,7 +278,15 @@ describe('Test Users Utils', () => {
     
     test('Verify Discord Handle - No Results Success', async() => {
         mockQuery.promise.mockResolvedValueOnce({});
-        expect(await Users.discordHandleExists('Test#0001')).toBe(false);
+        expect(await Users.discordMemberExists({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -231,7 +295,15 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0
         });
-        expect(await Users.discordHandleExists('Test#0001')).toBe(false);
+        expect(await Users.discordMemberExists({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -240,13 +312,21 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0,
             LastEvaluatedKey: {
-                "discordHandle": "User#0001"
+                "discordMemberId": "5555"
             }
         }).mockResolvedValueOnce({
             Items: [],
             Count: 0,
         });
-        expect(await Users.discordHandleExists('Test#0001')).toBe(false);
+        expect(await Users.discordMemberExists({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(false);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(2);
     });
 
@@ -257,14 +337,22 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     }
                 }
             ],
             Count: 1
         });
-        expect(await Users.discordHandleExists('Test#0001')).toBe(true);
+        expect(await Users.discordMemberExists({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(true);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
@@ -273,7 +361,7 @@ describe('Test Users Utils', () => {
             Items: [],
             Count: 0,
             LastEvaluatedKey: {
-                "discordHandle": "User#0001"
+                "discordMemberId": "5555"
             }
         }).mockResolvedValueOnce({
             Items: [
@@ -281,14 +369,22 @@ describe('Test Users Utils', () => {
                     "oculusHandle": {
                         "S": "Test"
                     },
-                    "discordHandle": {
-                        "S": "Test#0001"
+                    "discordMemberId": {
+                        "S": "1111"
                     }
                 }
             ],
             Count: 1
         });
-        expect(await Users.discordHandleExists('Test#0001')).toBe(true);
+        expect(await Users.discordMemberExists({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 1111,
+                username: 'test'
+            }
+        })).toBe(true);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(2);
     });
 });

@@ -1,7 +1,7 @@
 import {Context, Callback} from 'aws-lambda';
 import {PutItemInput} from 'aws-sdk/clients/dynamodb';
 import {usersTableName} from './constants/EnvironmentProps';
-import {discordHandleExists, oculusHandleExists, usersTable} from './utils/Users';
+import {discordMemberExists, oculusHandleExists, usersTable} from './utils/Users';
 import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
 import {getDiscordMember, setMemberRole} from './utils/Discord';
 
@@ -56,7 +56,7 @@ export async function handler(event: UserAuthRequest, context: Context, callback
       };
     }
 
-    if (await discordHandleExists(event.discordHandle)) {
+    if (await discordMemberExists(discordMember)) {
       return {
         statusCode: 409,
         errorMessage: 'This Discord user is already registered!',
@@ -73,8 +73,8 @@ export async function handler(event: UserAuthRequest, context: Context, callback
     const putParams: PutItemInput = {
       TableName: usersTableName,
       Item: {
-        'discordHandle': {
-          'S': event.discordHandle,
+        'discordMemberId': {
+          'S': `${discordMember.user.id}`,
         },
         'oculusHandle': {
           'S': event.oculusHandle,

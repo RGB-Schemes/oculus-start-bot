@@ -42,10 +42,10 @@ The Oculus Start Discord Bot is architectured around a serverless design, allowi
 We have two DynamoDB tables at the moment: One used for storing authenticated users and one for storing events for the server.
 
 ## Authenticated Users Table
-|**Column**|discordHandle|oculusHandle|startTrack|email|hardware|projects|
+|**Column**|discordMemberId|oculusHandle|startTrack|email|hardware|projects|
 |--|-|-|---|--------|-----|---------|
 |**Format**|string (Primary Key)|string|string|string|List of strings|List of Project objects|
-|**Description**|The user's Discord handle. This is their specific Discord handle as the format is described [here](https://discord.com/developers/docs/resources/user).|The user's Oculus handle. Used to validate that they are a member of Oculus Start, as well as for certain events.|The track that the user is on. Currently this is just one of three values: "Normal", "Growth", or "Alumni".|The user's email address **associated with their Oculus account**. That last part is key, as it will be used in certain events to allow them to be added to release channels for Oculus apps.|A list of devices the user owns. Currently limited to just Oculus devices.|A list of projects the user has created. These projects have a specific format. See below for more details.
+|**Description**|The user's Discord user ID. This is their specific Discord user ID, which is unique throughout Discord.|The user's Oculus handle. Used to validate that they are a member of Oculus Start, as well as for certain events.|The track that the user is on. Currently this is just one of three values: "Normal", "Growth", or "Alumni".|The user's email address **associated with their Oculus account**. That last part is key, as it will be used in certain events to allow them to be added to release channels for Oculus apps.|A list of devices the user owns. Currently limited to just Oculus devices.|A list of projects the user has created. These projects have a specific format. See below for more details.
 
 A user's projects are formatted as a JSON document. As an example project:
 ```json

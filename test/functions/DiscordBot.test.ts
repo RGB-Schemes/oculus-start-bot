@@ -9,14 +9,14 @@ const mockDynamoDB = {
 
 const mockIsUserAuthorized = jest.fn().mockReturnValue(false);
 const mockOculusHandleExists = jest.fn().mockReturnValue(false);
-const mockDiscordHandleExists = jest.fn().mockReturnValue(false);
+const mockDiscordMemberExists = jest.fn().mockReturnValue(false);
 
 jest.mock('../../src/functions/utils/Users', () => {
     return {
         usersTable: mockDynamoDB,
         isUserAuthorized: mockIsUserAuthorized,
         oculusHandleExists: mockOculusHandleExists,
-        discordHandleExists: mockDiscordHandleExists
+        discordMemberExists: mockDiscordMemberExists
     };
 });
 

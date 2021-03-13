@@ -20,7 +20,7 @@ export async function getDiscordSecrets(): Promise<DiscordSecrets | undefined> {
         __discordSecrets = JSON.parse(discordApiKeys.SecretString);
       }
     } catch (exception) {
-      console.log(exception);
+      console.log(`Unable to get Discord secrets: ${exception}`);
     }
   }
   return __discordSecrets;

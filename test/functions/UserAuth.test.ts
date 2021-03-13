@@ -8,13 +8,13 @@ const mockDynamoDB = {
 };
 
 const mockOculusHandleExists = jest.fn().mockReturnValue(false);
-const mockDiscordHandleExists = jest.fn().mockReturnValue(false);
+const mockDiscordMemberExists = jest.fn().mockReturnValue(false);
 
 jest.mock('../../src/functions/utils/Users', () => {
     return {
         usersTable: mockDynamoDB,
         oculusHandleExists: mockOculusHandleExists,
-        discordHandleExists: mockDiscordHandleExists
+        discordMemberExists: mockDiscordMemberExists
     };
 });
 
@@ -47,7 +47,7 @@ describe('Test UserAuth', () => {
     afterEach(() => {
         mockPutItem.promise.mockReset();
         mockOculusHandleExists.mockReset();
-        mockDiscordHandleExists.mockReset();
+        mockDiscordMemberExists.mockReset();
         mockSetMemberRole.mockReset();
         mockGetDiscordMember.mockReset();
     });
@@ -68,7 +68,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(1);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(1);
     });
@@ -80,7 +80,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(0);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
@@ -97,7 +97,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
@@ -112,7 +112,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
@@ -126,13 +126,13 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(0);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(0);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
 
     test('Test Handle New User - Discord User Already Registered Failure', async() => {
-        mockDiscordHandleExists.mockReturnValueOnce(true);
+        mockDiscordMemberExists.mockReturnValueOnce(true);
         mockGetDiscordMember.mockReturnValueOnce({
             deaf: false,
             roles: [],
@@ -152,7 +152,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
@@ -176,7 +176,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(0);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
@@ -200,7 +200,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(1);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(0);
     });
@@ -222,7 +222,7 @@ describe('Test UserAuth', () => {
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(1);
-        expect(mockDiscordHandleExists).toHaveBeenCalledTimes(1);
+        expect(mockDiscordMemberExists).toHaveBeenCalledTimes(1);
         expect(mockPutItem.promise).toHaveBeenCalledTimes(1);
         expect(mockSetMemberRole).toHaveBeenCalledTimes(1);
     });
