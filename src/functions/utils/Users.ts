@@ -83,8 +83,8 @@ export async function oculusHandleExists(oculusHandle: string): Promise<boolean>
 }
 
 /**
- * Checks to see if a Discord handle has already been registered.
- * @param {DiscordMember} discordMember The Discord handle to check and see if has already been registered.
+ * Checks to see if a Discord member has already been registered.
+ * @param {DiscordMember} discordMember The Discord member to check and see if has already been registered.
  */
 export async function discordMemberExists(discordMember: DiscordMember): Promise<boolean> {
     var queryParams: QueryInput = {

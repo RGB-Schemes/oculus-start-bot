@@ -21,12 +21,15 @@ Authorize Discord Handle API Endpoint-->Start Member Authorization Lambda:{\n   
 Start Member Authorization Lambda-->Users DynamoDB Table:scan\n{\n    oculusHandle: "ABC"\n}
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
 Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify.\nThis means continuing to scan for the Oculus handle if the responses are too large.
-Start Member Authorization Lambda-->Users DynamoDB Table:query\n{\n    discordHandle: "ABC#0001"\n}
+Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Discord handle is properly formatted
+Start Member Authorization Lambda-->Discord: Get Discord member ID
+Discord->Start Member Authorization Lambda:111111111111111111
+Start Member Authorization Lambda-->Users DynamoDB Table:query\n{\n    discordMemberId: "111111111111111111"\n}
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
-Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Discord handle has not been previously used to verify.\nThis means continuing to query for the Discord handle if the responses are too large.
+Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Discord member ID has not been previously used to verify.\nThis means continuing to query for the Discord member ID if the responses are too large.
 
-alt If Oculus and Discord handle has NOT been previously used
-Start Member Authorization Lambda-->Users DynamoDB Table:putItem\n{\n    discordHandle: "ABC#0001",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
+alt If Oculus and Discord member ID has NOT been previously used
+Start Member Authorization Lambda-->Users DynamoDB Table:putItem\n{\n    discordMemberId: "111111111111111111",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
 
 Users DynamoDB Table->Start Member Authorization Lambda: Success
 Start Member Authorization Lambda->Discord:Update user to have new role and proper server permissions..
@@ -36,7 +39,7 @@ Oculus Start Website->Start Member: Users gets sent to the Discord server via a 
 
 end
 
-alt If Oculus or Discord handle HAS been previously used
+alt If Oculus or Discord member ID HAS been previously used
 
 Start Member Authorization Lambda->Authorize Discord Handle API Endpoint:{\n    statusCode: 409,\n    errorMessage: "The handle provided has already been authorized."\n}
 Authorize Discord Handle API Endpoint->Oculus Start Website:{\n    statusCode: 409,\n    errorMessage: "The handle provided has already been authorized."\n}

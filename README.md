@@ -21,11 +21,13 @@ To deploy the infrastructure, you will want to do the following:
 {
   "appId": "XXXXX",
   "publicKey": "XXXXX",
-  "clientId": "XXXXX"
+  "clientId": "XXXXX",
+  "authToken": "XXXXX",
+  "serverId": "XXXXX"
 }
 ```
 5. Run `npm run config`  - Sets up the Discord server's Slash Commands and other configuration properties. This uses your secrets configured above so that you can securely deploy everything.
-6. Going back into your AWS Account, add API Keys and associate them with the bot's API Gateway endpoints to authorize others to call the bots commands.
+6. Going back into your AWS Account, add API Keys and associate them with the Start API Gateway endpoints to authorize others to call the bots commands.
 
 At this stage, you should be able to use the bot on your server and use the various REST APIs! Note that there may be some time delays as things propogate through the system, so you may need to wait for some time (for example: Discord can be slow when updating the available Slash Commands).
 
@@ -65,7 +67,7 @@ A user's projects are formatted as a JSON document. As an example project:
 |**Column**|name|startDate|endDate|maxPresentors|presentors|maxAttendees|attendees|
 |-|-|---|--------|-----|---------|-|-|
 |**Format**|string (Primary Key)|string of ISO8601 time format|string of ISO8601 time format|Number|List of strings|Number|List of strings|
-|**Description**|The name of the event.|The time at which the event starts.|The time at which the event ends.|The maximum number of presentors the event can have.|A list of Discord handles for people presenting at the event.|The maximum number of attendees an event can have.|A list of Discord handles for people attending the event.|
+|**Description**|The name of the event.|The time at which the event starts.|The time at which the event ends.|The maximum number of presentors the event can have.|A list of Discord user IDs for people presenting at the event.|The maximum number of attendees an event can have.|A list of Discord user IDs for people attending the event.|
 
 # User Flow Diagrams
 Users can interact with the bot in one of two primary ways: Via Discord with various commands from the bot, or via a website that uses the API endpoints. **As of this moment, the bot only accessible via the Discord commands. The user flows for the website examples are for potential future additions.**

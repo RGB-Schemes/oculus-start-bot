@@ -276,7 +276,7 @@ describe('Test Users Utils', () => {
         expect(mockDynamoDB.scan().promise).toBeCalledTimes(2);
     });
     
-    test('Verify Discord Handle - No Results Success', async() => {
+    test('Verify Discord Member - No Results Success', async() => {
         mockQuery.promise.mockResolvedValueOnce({});
         expect(await Users.discordMemberExists({
             deaf: false,
@@ -290,7 +290,7 @@ describe('Test Users Utils', () => {
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
-    test('Verify Discord Handle - Empty Results Success', async() => {
+    test('Verify Discord Member - Empty Results Success', async() => {
         mockQuery.promise.mockResolvedValueOnce({
             Items: [],
             Count: 0
@@ -307,7 +307,7 @@ describe('Test Users Utils', () => {
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
-    test('Verify Discord Handle - Multiple Empty Results Success', async() => {
+    test('Verify Discord Member - Multiple Empty Results Success', async() => {
         mockQuery.promise.mockResolvedValueOnce({
             Items: [],
             Count: 0,
@@ -330,7 +330,7 @@ describe('Test Users Utils', () => {
         expect(mockDynamoDB.query().promise).toBeCalledTimes(2);
     });
 
-    test('Verify Discord Handle - Failure', async() => {
+    test('Verify Discord Member - Failure', async() => {
         mockQuery.promise.mockResolvedValueOnce({
             Items: [
                 {
@@ -356,7 +356,7 @@ describe('Test Users Utils', () => {
         expect(mockDynamoDB.query().promise).toBeCalledTimes(1);
     });
 
-    test('Verify Discord Handle - Multiple Empty Results Failure', async() => {
+    test('Verify Discord Member - Multiple Empty Results Failure', async() => {
         mockQuery.promise.mockResolvedValueOnce({
             Items: [],
             Count: 0,

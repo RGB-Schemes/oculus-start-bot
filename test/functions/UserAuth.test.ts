@@ -93,7 +93,7 @@ describe('Test UserAuth', () => {
             startTrack: 'Normal'
         }, (null as unknown) as Context, (null as unknown) as Callback)).toStrictEqual({
             statusCode: 409,
-            errorMessage: 'This user has already registered their Discord handle before!'
+            errorMessage: 'This user has already registered their Discord account before!'
         });
         expect(mockOculusHandleExists).toHaveBeenCalledTimes(1);
         expect(mockGetDiscordMember).toHaveBeenCalledTimes(0);

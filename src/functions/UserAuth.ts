@@ -37,7 +37,7 @@ export async function handler(event: UserAuthRequest, context: Context, callback
     if (await oculusHandleExists(event.oculusHandle)) {
       return {
         statusCode: 409,
-        errorMessage: 'This user has already registered their Discord handle before!',
+        errorMessage: 'This user has already registered their Discord account before!',
       };
     }
 
