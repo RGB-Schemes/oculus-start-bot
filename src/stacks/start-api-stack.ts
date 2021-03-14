@@ -78,7 +78,7 @@ export class StartAPIStack extends Stack {
       const startAPICertificate = new DnsValidatedCertificate(this, 'start-api-cert', {
         domainName: oculusStartAuthDomain,
         hostedZone: hostedZone,
-      });;
+      }); ;
 
       // Create our API Gateway
       startAPI = new RestApi(this, 'start-api', {
