@@ -1,6 +1,4 @@
-#!/usr/bin/env node
-import 'source-map-support/register';
-import * as cdk from '@aws-cdk/core';
+import { App } from '@aws-cdk/core';
 import { DiscordBotStack } from './stacks/discord-bot-stack';
 import { StartAPIStack } from './stacks/start-api-stack';
 import { DiscordConfigStack } from './stacks/discord-config-stack';
@@ -10,7 +8,7 @@ const stackEnv = {
   region: process.env.CDK_DEFAULT_REGION
 };
 
-const app = new cdk.App();
+const app = new App();
 const discordConfigStack = new DiscordConfigStack(app, 'DiscordConfigStack', {
   env: stackEnv
 });
