@@ -468,8 +468,7 @@ describe('Test DiscordBot', () => {
             type: 3,
             data: {
                 tts: false,
-                content: `You have been verified! You can now use the bot \
-            commands!`,
+                content: `You have been verified! You can now use the bot commands!`,
                 embeds: [],
                 allowed_mentions: [],
             },
@@ -514,8 +513,7 @@ describe('Test DiscordBot', () => {
             type: 3,
             data: {
                 tts: false,
-                content: `You have been verified! You can now use the bot \
-            commands!`,
+                content: `You have been verified! You can now use the bot commands!`,
                 embeds: [],
                 allowed_mentions: [],
             },

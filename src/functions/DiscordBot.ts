@@ -132,8 +132,8 @@ export async function handleCommand(event: DiscordEventRequest): Promise<Discord
             event.jsonBody.data.options[0].name == 'oculus_handle' &&
             event.jsonBody.data.options[0].value && await updateUser(event.jsonBody.member,
               event.jsonBody.data.options[0].value, highestRole)) {
-            return generateStandardResponse('You have been verified! You can now use the bot \
-            commands!');
+            const responseText = 'You have been verified! You can now use the bot commands!';
+            return generateStandardResponse(responseText);
           } else {
             return generateStandardResponse('There was a problem verifying you!');
           }
