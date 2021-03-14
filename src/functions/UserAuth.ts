@@ -1,7 +1,6 @@
 import {Context, Callback} from 'aws-lambda';
-import {PutItemInput} from 'aws-sdk/clients/dynamodb';
-import {authAPIKeyTag, usersTableName} from './constants/EnvironmentProps';
-import {discordMemberExists, oculusHandleExists, usersTable} from './utils/Users';
+import {authAPIKeyTag} from './constants/EnvironmentProps';
+import {discordMemberExists, oculusHandleExists, updateUser} from './utils/Users';
 import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
 import {getDiscordMember, setMemberRole} from './utils/Discord';
 import {isAuthorized} from './utils/LambdaAuth';
@@ -78,23 +77,7 @@ export async function handler(event: UserAuthRequest, context: Context, callback
       };
     }
 
-    const putParams: PutItemInput = {
-      TableName: usersTableName,
-      Item: {
-        'discordMemberId': {
-          'S': `${discordMember.user.id}`,
-        },
-        'oculusHandle': {
-          'S': event.oculusHandle,
-        },
-        'startTrack': {
-          'S': event.startTrack.toLowerCase(),
-        },
-      },
-    };
-    try {
-      await usersTable.putItem(putParams).promise();
-
+    if (await updateUser(discordMember, event.oculusHandle, event.startTrack)) {
       if (await setMemberRole(discordMember, ROLE_MAP[event.startTrack.toLowerCase()])) {
         return {
           statusCode: 200,
@@ -105,8 +88,7 @@ export async function handler(event: UserAuthRequest, context: Context, callback
           errorMessage: 'There was an error setting the user\'s role!',
         };
       }
-    } catch (err) {
-      console.log(`An error occurred when adding the new user: ${err}`);
+    } else {
       return {
         statusCode: 500,
         errorMessage: 'There was an adding the new user!',

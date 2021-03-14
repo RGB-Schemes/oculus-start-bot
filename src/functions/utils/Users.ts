@@ -1,4 +1,4 @@
-import { QueryInput, QueryOutput, ScanInput } from 'aws-sdk/clients/dynamodb';
+import { PutItemInput, QueryInput, QueryOutput, ScanInput } from 'aws-sdk/clients/dynamodb';
 import { DynamoDB } from 'aws-sdk';
 import { usersTableName } from '../constants/EnvironmentProps';
 import { START_TRACKS } from '../constants/DiscordServerProps';
@@ -7,7 +7,7 @@ import { DiscordMember } from '../../types';
 /**
  * The actual table instance for the users to read and write from.
  */
-export const usersTable = new DynamoDB();
+const usersTable = new DynamoDB();
 
 function hasAuthorizedResults(discordMember: DiscordMember, queryResults: QueryOutput, authorizedRoles: string[]): boolean {
     if (queryResults.Count && queryResults.Count > 0) {
@@ -109,4 +109,37 @@ export async function discordMemberExists(discordMember: DiscordMember): Promise
     } while (queryResults.LastEvaluatedKey)
 
     return (queryResults.Count && queryResults.Count > 0) ? true : false;
+}
+
+/**
+ * Updates a user in the users table.
+ *
+ * @param {DiscordMember} discordMember The Discord member to update for.
+ * @param {string} oculusHandle The Oculus handle of this user.
+ * @param {string} startTrack The track that this user is on.
+ * @return {boolean} True on success, false otherwise.
+ */
+export async function updateUser(discordMember: DiscordMember,
+    oculusHandle: string, startTrack: string): Promise<boolean> {
+    const putParams: PutItemInput = {
+        TableName: usersTableName,
+        Item: {
+            'discordMemberId': {
+                'S': `${discordMember.user.id}`,
+            },
+            'oculusHandle': {
+                'S': oculusHandle,
+            },
+            'startTrack': {
+                'S': startTrack.toLowerCase(),
+            },
+        },
+    };
+    try {
+        await usersTable.putItem(putParams).promise();
+        return true;
+    } catch (err) {
+        console.log(`An error occurred when adding the new user: ${err}`);
+    }
+    return false;
 }

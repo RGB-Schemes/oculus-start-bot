@@ -4,6 +4,9 @@ import {DiscordMember} from '../types';
 import {isUserAuthorized} from './utils/Users';
 import {Embed} from 'slash-commands';
 import {getDiscordSecrets} from './utils/DiscordSecrets';
+import {hasMemberRole} from './utils/Discord';
+import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
+import {updateUser} from './utils/Users';
 
 export interface DiscordEventRequest {
   timestamp: string;
@@ -21,6 +24,12 @@ export interface DiscordJsonBody {
 export interface DiscordRequestData {
   id: string;
   name: string;
+  options?: DiscordRequestDataOption[];
+}
+
+export interface DiscordRequestDataOption {
+  name: string;
+  value: string;
 }
 
 export interface DiscordEventResponse {
@@ -109,6 +118,27 @@ export async function handleCommand(event: DiscordEventRequest): Promise<Discord
         } else {
           return generateStandardResponse(`You are not authorized for that command ` +
             `${event.jsonBody.member.user.username}.`);
+        }
+      case 'verify':
+        let highestRole: string | undefined = undefined;
+        for (let i = START_TRACKS.length-1; i > -1; i--) {
+          if (await hasMemberRole(event.jsonBody.member, ROLE_MAP[START_TRACKS[i]])) {
+            highestRole = START_TRACKS[i];
+            break;
+          }
+        }
+        if (highestRole != undefined) {
+          if (event.jsonBody.data.options &&
+            event.jsonBody.data.options[0].name == 'oculus_handle' &&
+            event.jsonBody.data.options[0].value && await updateUser(event.jsonBody.member,
+              event.jsonBody.data.options[0].value, highestRole)) {
+            return generateStandardResponse('You have been verified! You can now use the bot \
+            commands!');
+          } else {
+            return generateStandardResponse('There was a problem verifying you!');
+          }
+        } else {
+          return generateStandardResponse('You do not have an Oculus Start role assigned!');
         }
       default:
         return generateStandardResponse('Hey, that\'s a new command!');

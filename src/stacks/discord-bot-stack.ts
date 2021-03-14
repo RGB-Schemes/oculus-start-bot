@@ -36,7 +36,7 @@ export class DiscordBotStack extends Stack {
       },
       timeout: Duration.seconds(60),
     });
-    props.usersTable.grantReadData(discordBotLambda);
+    props.usersTable.grantReadWriteData(discordBotLambda);
     props.discordAPISecrets.grantRead(discordBotLambda);
 
     // Create our API Gateway

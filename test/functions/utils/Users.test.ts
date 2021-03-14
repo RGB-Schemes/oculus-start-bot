@@ -6,9 +6,13 @@ const mockScan = {
 const mockQuery = {
     promise: jest.fn()
 }
+const mockPutItem = {
+    promise: jest.fn()
+}
 const mockDynamoDB = {
     scan: jest.fn(() => mockScan),
-    query: jest.fn(() => mockQuery)
+    query: jest.fn(() => mockQuery),
+    putItem: jest.fn(() => mockPutItem)
 };
 
 jest.mock('aws-sdk', () => {
@@ -30,6 +34,7 @@ describe('Test Users Utils', () => {
     afterEach(() => {
         mockScan.promise.mockReset();
         mockQuery.promise.mockReset();
+        mockPutItem.promise.mockReset();
     });
     
     test('Verify Authorization - Success', async () => {
@@ -386,5 +391,34 @@ describe('Test Users Utils', () => {
             }
         })).toBe(true);
         expect(mockDynamoDB.query().promise).toBeCalledTimes(2);
+    });
+
+    test('Update User - Success', async () => {
+        expect(await Users.updateUser({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        }, 'Test', 'normal')).toBe(true);
+        expect(mockDynamoDB.putItem().promise).toBeCalledTimes(1);
+    });
+
+    test('Update User - Put Failure', async () => {
+        mockPutItem.promise.mockImplementationOnce(() => {
+            throw new Error('Handle errors');
+        });
+        expect(await Users.updateUser({
+            deaf: false,
+            roles: [],
+            user: {
+                discriminator: '5',
+                id: 5,
+                username: 'test'
+            }
+        }, 'Test', 'normal')).toBe(false);
+        expect(mockDynamoDB.putItem().promise).toBeCalledTimes(1);
     });
 });

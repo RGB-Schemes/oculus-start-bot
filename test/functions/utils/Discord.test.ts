@@ -241,4 +241,92 @@ describe('Test Discord APIs', () => {
     expect(mockedAxios.get).toHaveBeenCalledTimes(1);
     expect(mockedAxios.put).toHaveBeenCalledTimes(0);
   });
+
+  test('Test hasMemberRole - Success', async () => {
+    mockDiscordSecrets.mockReturnValue(Promise.resolve({
+      serverId: 'serverId',
+      authToken: 'authToken'
+    }));
+    mockedAxios.get.mockReturnValueOnce(Promise.resolve({
+      data: [
+        {
+          id: '5',
+          name: 'testRole'
+        } as DiscordRole
+      ]
+    }));
+    expect(await Discord.hasMemberRole({
+      deaf: false,
+      roles: ['5'],
+      user: {
+        discriminator: '1',
+        id: 1,
+        username: 'test'
+      }
+    }, 'testRole')).toEqual(true);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+  });
+
+  test('Test hasMemberRole - Custom Discord Key', async () => {
+    mockDiscordSecrets.mockReturnValueOnce(Promise.resolve(undefined));
+    mockedAxios.get.mockReturnValueOnce(Promise.resolve({
+      data: [
+        {
+          id: '5',
+          name: 'testRole'
+        } as DiscordRole
+      ]
+    }));
+    expect(await Discord.hasMemberRole({
+      deaf: false,
+      roles: ['5'],
+      user: {
+        discriminator: '1',
+        id: 1,
+        username: 'test'
+      }
+    }, 'testRole')).toEqual(true);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+  });
+
+  test('Test hasMemberRole - No Role Failure', async () => {
+    mockDiscordSecrets.mockReturnValue(Promise.resolve({
+      serverId: 'serverId',
+      authToken: 'authToken'
+    }));
+    mockedAxios.get.mockReturnValueOnce(Promise.resolve({
+      data: [
+      ]
+    }));
+    expect(await Discord.hasMemberRole({
+      deaf: false,
+      roles: ['5'],
+      user: {
+        discriminator: '1',
+        id: 1,
+        username: 'test'
+      }
+    }, 'testRole')).toEqual(false);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+  });
+
+  test('Test hasMemberRole - Success', async () => {
+    mockDiscordSecrets.mockReturnValue(Promise.resolve({
+      serverId: 'serverId',
+      authToken: 'authToken'
+    }));
+    mockedAxios.get.mockImplementationOnce(() => {
+      throw new Error('Handle errors');
+    });
+    expect(await Discord.hasMemberRole({
+      deaf: false,
+      roles: ['5'],
+      user: {
+        discriminator: '1',
+        id: 1,
+        username: 'test'
+      }
+    }, 'testRole')).toEqual(false);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
+  });
 });

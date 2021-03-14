@@ -35,6 +35,36 @@ export async function getDiscordMember(discordHandle: string): Promise<DiscordMe
 }
 
 /**
+ * Verifies if a member has a chosen role.
+ * 
+ * @param {DiscordMember} discordMember The Discord member to verify has the role.
+ * @param {string} discordRole The human readable name of the role to verify.
+ * @returns {boolean} Returns true if the user has the role, false otherwise.
+ */
+export async function hasMemberRole(discordMember: DiscordMember, discordRole: string): Promise<boolean> {
+  const discordSecret = await getDiscordSecrets();
+  const authConfig = {
+    headers: {
+      'Authorization': `Bot ${discordSecret?.authToken}`
+    }
+  };
+  let discordRoleId: string | undefined = undefined;
+
+  try {
+    discordRoleId = (
+      (await axios.get(`https://discord.com/api/v8/guilds/${discordSecret?.serverId}/roles`, authConfig))
+        .data as DiscordRole[]).filter(role => {
+      return role.name == discordRole;
+    }).pop()?.id;
+  } catch (exception) {
+    console.log(`There was an error retrieving the roles from the server: ${exception}`);
+    return false;
+  }
+
+  return discordRoleId != undefined && discordMember.roles.includes(discordRoleId);
+}
+
+/**
  * Assigns a role to a given Discord member. If the member already has the role, then
  * it will skip giving it again and simply return true.
  * 
@@ -55,8 +85,8 @@ export async function setMemberRole(discordMember: DiscordMember, discordRole: s
     discordRoleId = (
       (await axios.get(`https://discord.com/api/v8/guilds/${discordSecret?.serverId}/roles`, authConfig))
         .data as DiscordRole[]).filter(role => {
-      return role.name == discordRole;
-    }).pop()?.id;
+          return role.name == discordRole;
+        }).pop()?.id;
   } catch (exception) {
     console.log(`There was an error retrieving the roles from the server: ${exception}`);
     return false;
@@ -64,7 +94,7 @@ export async function setMemberRole(discordMember: DiscordMember, discordRole: s
 
   if (discordRoleId != undefined && !discordMember.roles.includes(discordRoleId)) {
     try {
-      const roleUrl = 
+      const roleUrl =
         `https://discord.com/api/v8/guilds/${discordSecret?.serverId}/members/${discordMember.user.id}/roles/${discordRoleId}`;
       return (await axios.put(roleUrl, {}, authConfig)).status == 204;
     } catch (exception) {

@@ -24,5 +24,8 @@
   "include": [
     "src/**/*.ts"
   ],
-  "exclude": ["cdk.out"]
+  "exclude": [
+    "cdk.out",
+    "outputs.json"
+  ]
 }

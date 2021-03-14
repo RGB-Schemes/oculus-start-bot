@@ -1,13 +1,26 @@
 import {AWSError, SecretsManager} from 'aws-sdk';
 import {GetSecretValueResponse} from 'aws-sdk/clients/secretsmanager';
-import {DiscordInteractions, PartialApplicationCommand} from 'slash-commands';
+import {DiscordInteractions} from 'slash-commands';
 import {DiscordSecrets} from '../types';
 import * as Stacks from '../configs/outputs.json';
 
-const commands: PartialApplicationCommand[] = [
+const commands = [
   {
     name: 'hello-world',
     description: 'A simple hello command to test.',
+  },
+  {
+    name: 'verify',
+    description: 'Verify your Oculus handle. You must have a valid Oculus Start role!',
+    options: [
+      {
+        name: 'oculus_handle',
+        description: 'Your Oculus handle. Make sure this \
+        matches what you registered with Oculus Start!',
+        type: 3,
+        required: true,
+      },
+    ],
   },
 ];
 
