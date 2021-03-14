@@ -2,8 +2,7 @@
   "name": "oculus-start-bot",
   "version": "0.1.0",
   "bin": {
-    "oculus-start-bot": "dist/app.js",
-    "oculus-start-bot-create-slash-commands": "dist/slash-commands.js"
+    "oculus-start-bot": "dist/app.js"
   },
   "jest": {
     "preset": "ts-jest",
@@ -16,8 +15,8 @@
     ],
     "coveragePathIgnorePatterns": [
       "src/app.ts",
-      "src/configure-discord-server.ts",
       "src/configs",
+      "src/tools",
       "src/functions/constants"
     ],
     "coverageThreshold": {
@@ -38,8 +37,8 @@
     "cdk": "cdk",
     "synth": "cdk synth",
     "deploy": "cdk deploy --all --outputs-file dist/configs/outputs.json",
-    "config": "node dist/configure-discord-server.js setup",
-    "reset": "node dist/configure-discord-server.js reset"
+    "config": "node dist/tools/configure-discord-server.js setup",
+    "reset": "node dist/tools/configure-discord-server.js reset"
   },
   "devDependencies": {
     "@aws-cdk/assert": "^1.92.0",

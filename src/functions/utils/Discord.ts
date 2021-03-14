@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import { DiscordMember, DiscordRole } from '../../types';
 import { getDiscordSecrets } from './DiscordSecrets';
 
