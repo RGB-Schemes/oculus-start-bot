@@ -1,5 +1,5 @@
 import {Runtime} from '@aws-cdk/aws-lambda';
-import {LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
+import {Cors, LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
 import {Construct, Duration, Stack, StackProps} from '@aws-cdk/core';
 import {Secret} from '@aws-cdk/aws-secretsmanager';
@@ -42,9 +42,7 @@ export class DiscordBotStack extends Stack {
     // Create our API Gateway
     const discordBotAPI = new RestApi(this, 'discord-bot-api', {
       defaultCorsPreflightOptions: {
-        allowOrigins: [
-          '*',
-        ],
+        allowOrigins: Cors.ALL_ORIGINS,
       },
     });
     const discordBotAPIValidator = new RequestValidator(this, 'discord-bot-api-validator', {

@@ -23,6 +23,7 @@
     "@aws-cdk/aws-certificatemanager": "^1.92.0",
     "@aws-cdk/aws-dynamodb": "^1.92.0",
     "@aws-cdk/aws-events": "^1.92.0",
+    "@aws-cdk/aws-iam": "^1.92.0",
     "@aws-cdk/aws-lambda": "^1.92.0",
     "@aws-cdk/aws-lambda-event-sources": "^1.92.0",
     "@aws-cdk/aws-lambda-nodejs": "^1.92.0",

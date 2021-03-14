@@ -1,9 +1,10 @@
 import {Context, Callback} from 'aws-lambda';
 import {PutItemInput} from 'aws-sdk/clients/dynamodb';
-import {usersTableName} from './constants/EnvironmentProps';
+import {authAPIKeyTag, usersTableName} from './constants/EnvironmentProps';
 import {discordMemberExists, oculusHandleExists, usersTable} from './utils/Users';
 import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
 import {getDiscordMember, setMemberRole} from './utils/Discord';
+import { isAuthorized } from './utils/LambdaAuth';
 
 /**
  * A regular expression for validating Discord handle formats.
@@ -16,6 +17,7 @@ export interface UserAuthRequest {
     discordHandle: string;
     oculusHandle: string;
     startTrack: string;
+    apiKey: string;
 }
 
 export interface UserAuthResponse {
@@ -34,6 +36,12 @@ export async function handler(event: UserAuthRequest, context: Context, callback
   console.log(`Received event: ${JSON.stringify(event)}`);
 
   if (event) {
+    if (await isAuthorized(event.apiKey, authAPIKeyTag) == false) {
+      return {
+        statusCode: 401,
+        errorMessage: 'You are not authorized for this API!'
+      }
+    }
     if (await oculusHandleExists(event.oculusHandle)) {
       return {
         statusCode: 409,

@@ -27,6 +27,15 @@ test('Test all stacks', () => {
     expect(startAPIStack).toHaveResource('AWS::Route53::RecordSet');
     expect(startAPIStack).toHaveResource('AWS::ApiGateway::UsagePlan');
 
+    const startAPIStack_no_domain = new StartAPI.StartAPIStack(app, 'StartAPIStack-no-domain', {
+        discordAPISecrets: discordConfigStack.discordAPISecrets,
+        env: testEnv
+    });
+    expect(startAPIStack_no_domain).toHaveResource('AWS::DynamoDB::Table');
+    expect(startAPIStack_no_domain).toHaveResource('AWS::Lambda::Function');
+    expect(startAPIStack_no_domain).toHaveResource('AWS::ApiGateway::RestApi');
+    expect(startAPIStack_no_domain).toHaveResource('AWS::ApiGateway::UsagePlan');
+
     const discordBotStack = new DiscordBot.DiscordBotStack(app, 'DiscordBotStack', {
         discordAPISecrets: discordConfigStack.discordAPISecrets,
         usersTable: startAPIStack.usersTable,

@@ -11,7 +11,7 @@ When deploying, the order in which you run everything is currently important. Th
 1. Deploying the actual infrastructure
 2. Configuring the Discord server to use the infrastructure.
 
-To deploy the infrastructure, you will want to do the following:
+Prior to deployment, you'll want to update `src/app.ts` to use a different domain name that you have setup in Route 53 to have the endpoint accessible by. You can also remove this field to allow for it to go unused, in which case you will need to manually note the endpoint URls that are generated. To deploy the infrastructure, you will want to do the following:
 
 1. Run `npm run build`  - Compiles the TypeScript into JavaScript
 2. Run `npm run synth`  - Synthesizes the CDK templates into CloudFormation templates.
@@ -27,7 +27,7 @@ To deploy the infrastructure, you will want to do the following:
 }
 ```
 5. Run `npm run config`  - Sets up the Discord server's Slash Commands and other configuration properties. This uses your secrets configured above so that you can securely deploy everything.
-6. Going back into your AWS Account, add API Keys and associate them with the Start API Gateway endpoints to authorize others to call the bots commands.
+6. Going back into your AWS Account, add API Keys and add them to the `Start API Usage Plan` so that you can access them.
 
 At this stage, you should be able to use the bot on your server and use the various REST APIs! Note that there may be some time delays as things propogate through the system, so you may need to wait for some time (for example: Discord can be slow when updating the available Slash Commands).
 
@@ -41,7 +41,13 @@ The Oculus Start Discord Bot is architectured around a serverless design, allowi
 ![The architecture diagram for the project.](diagrams/architecture.png?raw=true)
 
 # Table Layouts
-We have two DynamoDB tables at the moment: One used for storing authenticated users and one for storing events for the server.
+We have three DynamoDB tables at the moment: One used for storing API Keys and what they are authorized for, one used for storing authenticated users and their data, and one for storing events for the server.
+
+## Authorization Table
+|**Column**|apiKey|validationTags|
+|--|-|-|
+|**Format**|string (Primary Key)|Set of strings|
+|**Description**|The API Key stored here.|The validation tags for what this API Key is allowed to access.
 
 ## Authenticated Users Table
 |**Column**|discordMemberId|oculusHandle|startTrack|email|hardware|projects|

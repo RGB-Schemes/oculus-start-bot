@@ -4,6 +4,7 @@ participant Start Member
 participant Oculus Start Website
 participant Authorize Discord Handle API Endpoint
 participant Start Member Authorization Lambda
+participant Auth DynamoDB Table
 participant Users DynamoDB Table
 participant Discord
 
@@ -16,8 +17,11 @@ end
 
 alt If the user is a member of Oculus Start
 Oculus Start Website-->Authorize Discord Handle API Endpoint:POST /auth?discordHandle=ABC#0001&oculusHandle=ABC&startTrack=Normal\n\nheader\n{\n    x-api-key: "APIKEY"\n}
-Authorize Discord Handle API Endpoint-->Start Member Authorization Lambda:{\n    discordHandle: "ABC#0001",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
+Authorize Discord Handle API Endpoint-->Start Member Authorization Lambda:{\n    discordHandle: "ABC#0001",\n    oculusHandle: "ABC",\n    startTrack: "Normal",\n    apiKey: "APIKEY\n}
 
+Start Member Authorization Lambda-->Auth DynamoDB Table:query\n{\n    "apiKey": "APIKEY"\n}
+Auth DynamoDB Table->Start Member Authorization Lambda:{\n    "apiKey": "APIKEY",\n    "validationTags": ["auth"]\n}
+Start Member Authorization Lambda->Start Member Authorization Lambda:Verify user has the "auth" validation tag
 Start Member Authorization Lambda-->Users DynamoDB Table:scan\n{\n    oculusHandle: "ABC"\n}
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
 Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Oculus handle has not been previously used to verify.\nThis means continuing to scan for the Oculus handle if the responses are too large.
@@ -28,7 +32,7 @@ Start Member Authorization Lambda-->Users DynamoDB Table:query\n{\n    discordMe
 Users DynamoDB Table->Start Member Authorization Lambda:{\n}
 Start Member Authorization Lambda->Start Member Authorization Lambda:Verify Discord member ID has not been previously used to verify.\nThis means continuing to query for the Discord member ID if the responses are too large.
 
-alt If Oculus and Discord member ID has NOT been previously used
+alt If Oculus and Discord member ID has NOT been previously used, or if the API Key used is NOT authorized.
 Start Member Authorization Lambda-->Users DynamoDB Table:putItem\n{\n    discordMemberId: "111111111111111111",\n    oculusHandle: "ABC",\n    startTrack: "Normal"\n}
 
 Users DynamoDB Table->Start Member Authorization Lambda: Success
@@ -39,7 +43,7 @@ Oculus Start Website->Start Member: Users gets sent to the Discord server via a 
 
 end
 
-alt If Oculus or Discord member ID HAS been previously used
+alt If Oculus or Discord member ID HAS been previously used, as well as that the API Key used is authorized.
 
 Start Member Authorization Lambda->Authorize Discord Handle API Endpoint:{\n    statusCode: 409,\n    errorMessage: "The handle provided has already been authorized."\n}
 Authorize Discord Handle API Endpoint->Oculus Start Website:{\n    statusCode: 409,\n    errorMessage: "The handle provided has already been authorized."\n}

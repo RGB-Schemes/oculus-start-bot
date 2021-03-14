@@ -11,7 +11,7 @@ import {ApiGateway} from '@aws-cdk/aws-route53-targets';
 
 export interface StartAPIStackProps extends StackProps {
   discordAPISecrets: Secret;
-  domainAddress: string;
+  domainAddress?: string;
 }
 
 /**
@@ -32,6 +32,12 @@ export class StartAPIStack extends Stack {
     super(scope, id, props);
 
     // Create our DynamoDB tables first.
+    const apiAuthTable = new Table(this, 'api-auth-table', {
+      partitionKey: {
+        name: 'apiKey',
+        type: AttributeType.STRING,
+      },
+    });
     this.usersTable = new Table(this, 'user-auth-table', {
       partitionKey: {
         name: 'discordMemberId',
@@ -53,31 +59,46 @@ export class StartAPIStack extends Stack {
       handler: 'handler',
       environment: {
         DISCORD_BOT_API_KEY_NAME: props.discordAPISecrets.secretName,
+        AUTH_TABLE_NAME: apiAuthTable.tableName,
         USERS_TABLE_NAME: this.usersTable.tableName,
+        AUTH_API_KEY_TAG: 'auth',
       },
     });
+    apiAuthTable.grantReadData(userAuthLambda);
     this.usersTable.grantReadWriteData(userAuthLambda);
     props.discordAPISecrets.grantRead(userAuthLambda);
 
-    // Create our API Gateway
-    const hostedZone = HostedZone.fromLookup(this, 'rgbschemes-hosted-zone', {
-      domainName: props.domainAddress,
-    });
-    const startAPICertificate = new DnsValidatedCertificate(this, 'start-api-cert', {
-      domainName: `oculusstart.${props.domainAddress}`,
-      hostedZone: hostedZone,
-    }); ;
-    const startAPI = new RestApi(this, 'start-api', {
-      domainName: {
-        domainName: `oculusstart.${props.domainAddress}`,
-        certificate: startAPICertificate,
-      },
-    });
-    new ARecord(this, 'start-api-alias-record', {
-      zone: hostedZone,
-      target: RecordTarget.fromAlias(new ApiGateway(startAPI)),
-      recordName: `oculusstart.${props.domainAddress}`,
-    });
+    let startAPI: RestApi | undefined = undefined;
+    if (props.domainAddress) {
+      // Setup our hosted zone info and certificate for the API's endpoints.
+      const oculusStartAuthDomain = `oculusstart.${props.domainAddress}`;
+      const hostedZone = HostedZone.fromLookup(this, 'rgbschemes-hosted-zone', {
+        domainName: props.domainAddress,
+      });
+      const startAPICertificate = new DnsValidatedCertificate(this, 'start-api-cert', {
+        domainName: oculusStartAuthDomain,
+        hostedZone: hostedZone,
+      });;
+
+      // Create our API Gateway
+      startAPI = new RestApi(this, 'start-api', {
+        domainName: {
+          domainName: oculusStartAuthDomain,
+          certificate: startAPICertificate,
+        },
+      });
+
+      // Finally, make the API Endpoint accessible in our Route 53 records.
+      new ARecord(this, 'start-api-alias-record', {
+        zone: hostedZone,
+        target: RecordTarget.fromAlias(new ApiGateway(startAPI)),
+        recordName: oculusStartAuthDomain,
+      });
+    } else {
+      // If we don't have a domain address supplied, don't setup the endpoint url.
+      startAPI = new RestApi(this, 'start-api');
+    }
+
     const startAPIValidator = new RequestValidator(this, 'start-api-validator', {
       restApi: startAPI,
       validateRequestBody: true,
@@ -92,7 +113,8 @@ export class StartAPIStack extends Stack {
         'application/json': '{\
             "discordHandle": "$input.params(\'discordHandle\')",\
             "oculusHandle": "$input.params(\'oculusHandle\')",\
-            "startTrack": "$input.params(\'startTrack\')"\
+            "startTrack": "$input.params(\'startTrack\')",\
+            "apiKey": "$input.params(\'x-api-key\')"\
         }',
       },
       integrationResponses: [
