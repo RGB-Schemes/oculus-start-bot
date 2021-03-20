@@ -1,6 +1,7 @@
 # Oculus Start Discord Bot
 
-![Version Badge](https://img.shields.io/github/package-json/v/RGB-Schemes/oculus-start-bot?color=blue&logo=oculus) ![Build Status Badge](https://img.shields.io/github/workflow/status/RGB-Schemes/oculus-start-bot/Build%20Status?logo=node.js) ![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/oculus-start-bot__heads_mainline.json)
+![Version Badge](https://img.shields.io/github/package-json/v/RGB-Schemes/oculus-start-bot?color=blue&logo=oculus) ![Build Status Badge](https://img.shields.io/github/workflow/status/RGB-Schemes/oculus-start-bot/Build%20Status?logo=node.js) ![Coverage Badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/GEMISIS/d16ca0b787ba038971dd1308518c190d/raw/oculus-start-bot__heads_mainline.json) [![jest](https://jestjs.io/img/jest-badge.svg)](https://github.com/facebook/jest)
+
 
 
 This project is for setting up the Oculus Start Discord Bot! Using it, you can develop for, deploy locally, and maintain the Oculus Start Bot. It is built with CDK (entirely in TypeScript). It is currently maintained and deployed by **RGB Schemes** in order to help the Oculus Start program continue to grow, though we are attempting to work with Oculus to get this officially supported by them as well. You can learn more about the program and its benefits [here](https://developer.oculus.com/oculus-start/). We highly recommend other developers join!
