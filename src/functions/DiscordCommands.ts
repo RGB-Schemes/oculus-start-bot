@@ -1,5 +1,5 @@
 import {Context, Callback} from 'aws-lambda';
-import {DiscordEventRequest, DiscordResponseData} from 'discord-bot-cdk-construct';
+import {DiscordEventRequest, DiscordResponseData, verifyEvent} from 'discord-bot-cdk-construct';
 import {Embed} from 'slash-commands';
 import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
 import {hasMemberRole, sendResponse} from './utils/Discord';
@@ -15,12 +15,17 @@ import {isUserAuthorized, updateUser} from './utils/Users';
 export async function handler(event: DiscordEventRequest, context: Context,
     callback: Callback): Promise<string> {
   console.log('Running Discord command handler...');
-  const response = await handleCommand(event);
-  console.log('Sending response...');
-  if (event.jsonBody.token && await sendResponse(response, event.jsonBody.token)) {
-    console.log('Responded successfully!');
+
+  if (await verifyEvent(event)) {
+    const response = await handleCommand(event);
+    console.log('Sending response...');
+    if (event.jsonBody.token && await sendResponse(response, event.jsonBody.token)) {
+      console.log('Responded successfully!');
+    } else {
+      console.log('Failed to send response!');
+    }
   } else {
-    console.log('Failed to send response!');
+    console.log('Invalid request!');
   }
   return '200';
 }

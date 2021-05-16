@@ -63,7 +63,7 @@ export class StartAPIStack extends Stack {
     });
     this.usersTable.grantReadWriteData(discordCommandsLambda);
 
-    const discordBot = new DiscordBotConstruct(this, 'discod-bot-endpoint', {
+    const discordBot = new DiscordBotConstruct(this, 'discord-bot-endpoint', {
       commandsLambdaFunction: discordCommandsLambda,
     });
 

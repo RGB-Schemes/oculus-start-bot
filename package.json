@@ -77,7 +77,7 @@
     "aws-sdk": "^2.853.0",
     "aws-sdk-mock": "^5.1.0",
     "axios": "^0.21.1",
-    "discord-bot-cdk-construct": "^0.1.5",
+    "discord-bot-cdk-construct": "^0.1.8",
     "requests": "^0.3.0",
     "source-map-support": "^0.5.16",
     "tweetnacl": "^0.14.5"
