@@ -2,15 +2,14 @@ import {AttributeType, Table} from '@aws-cdk/aws-dynamodb';
 import {Runtime} from '@aws-cdk/aws-lambda';
 import {LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-apigateway';
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
-import {Construct, Stack, StackProps} from '@aws-cdk/core';
+import {Construct, Duration, Stack, StackProps} from '@aws-cdk/core';
 import * as path from 'path';
-import {Secret} from '@aws-cdk/aws-secretsmanager';
 import {DnsValidatedCertificate} from '@aws-cdk/aws-certificatemanager';
 import {ARecord, HostedZone, RecordTarget} from '@aws-cdk/aws-route53';
 import {ApiGateway} from '@aws-cdk/aws-route53-targets';
+import {DiscordBotConstruct} from 'discord-bot-cdk-construct';
 
 export interface StartAPIStackProps extends StackProps {
-  discordAPISecrets: Secret;
   domainAddress?: string;
 }
 
@@ -53,12 +52,28 @@ export class StartAPIStack extends Stack {
     // });
 
     // Create the Lambdas next.
+    const discordCommandsLambda = new NodejsFunction(this, 'discord-commands-lambda', {
+      runtime: Runtime.NODEJS_14_X,
+      entry: path.join(__dirname, '../functions/DiscordCommands.ts'),
+      handler: 'handler',
+      environment: {
+        USERS_TABLE_NAME: this.usersTable.tableName,
+      },
+      timeout: Duration.seconds(60),
+    });
+    this.usersTable.grantReadWriteData(discordCommandsLambda);
+
+    const discordBot = new DiscordBotConstruct(this, 'discod-bot-endpoint', {
+      commandsLambdaFunction: discordCommandsLambda,
+    });
+
+    // Create the Lambdas next.
     const userAuthLambda = new NodejsFunction(this, 'user-auth-lambda', {
       runtime: Runtime.NODEJS_14_X,
       entry: path.join(__dirname, '../functions/UserAuth.ts'),
       handler: 'handler',
       environment: {
-        DISCORD_BOT_API_KEY_NAME: props.discordAPISecrets.secretName,
+        DISCORD_BOT_API_KEY_NAME: discordBot.discordAPISecrets.secretName,
         AUTH_TABLE_NAME: apiAuthTable.tableName,
         USERS_TABLE_NAME: this.usersTable.tableName,
         AUTH_API_KEY_TAG: 'auth',
@@ -66,7 +81,7 @@ export class StartAPIStack extends Stack {
     });
     apiAuthTable.grantReadData(userAuthLambda);
     this.usersTable.grantReadWriteData(userAuthLambda);
-    props.discordAPISecrets.grantRead(userAuthLambda);
+    discordBot.discordAPISecrets.grantRead(userAuthLambda);
 
     let startAPI: RestApi | undefined = undefined;
     if (props.domainAddress) {

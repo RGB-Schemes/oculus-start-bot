@@ -1,7 +1,7 @@
 import {AWSError, SecretsManager} from 'aws-sdk';
 import {GetSecretValueResponse} from 'aws-sdk/clients/secretsmanager';
 import {DiscordInteractions} from 'slash-commands';
-import {DiscordSecrets} from '../types';
+import {DiscordSecrets} from 'discord-bot-cdk-construct';
 import * as Stacks from '../configs/outputs.json';
 
 const commands = [

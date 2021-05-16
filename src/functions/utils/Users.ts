@@ -2,7 +2,7 @@ import { PutItemInput, QueryInput, QueryOutput, ScanInput } from 'aws-sdk/client
 import { DynamoDB } from 'aws-sdk';
 import { usersTableName } from '../constants/EnvironmentProps';
 import { START_TRACKS } from '../constants/DiscordServerProps';
-import { DiscordMember } from '../../types';
+import { DiscordMember } from 'discord-bot-cdk-construct';
 
 /**
  * The actual table instance for the users to read and write from.

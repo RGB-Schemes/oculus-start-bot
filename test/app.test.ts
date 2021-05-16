@@ -1,7 +1,5 @@
 import * as cdk from '@aws-cdk/core';
 import '@aws-cdk/assert/jest';
-import * as DiscordConfig from '../src/stacks/discord-config-stack';
-import * as DiscordBot from '../src/stacks/discord-bot-stack';
 import * as StartAPI from '../src/stacks/start-api-stack';
 
 test('Test all stacks', () => {
@@ -11,36 +9,27 @@ test('Test all stacks', () => {
         region: 'testRegion'
     }
 
-    const discordConfigStack = new DiscordConfig.DiscordConfigStack(app, 'DiscordConfigStack', {
-        env: testEnv
-    });
-    expect(discordConfigStack).toHaveResource('AWS::SecretsManager::Secret');
-
     const startAPIStack = new StartAPI.StartAPIStack(app, 'StartAPIStack', {
-        discordAPISecrets: discordConfigStack.discordAPISecrets,
         domainAddress: 'example.com',
         env: testEnv
     });
+    expect(startAPIStack).toHaveResource('AWS::SecretsManager::Secret');
     expect(startAPIStack).toHaveResource('AWS::DynamoDB::Table');
     expect(startAPIStack).toHaveResource('AWS::Lambda::Function');
     expect(startAPIStack).toHaveResource('AWS::ApiGateway::RestApi');
     expect(startAPIStack).toHaveResource('AWS::Route53::RecordSet');
     expect(startAPIStack).toHaveResource('AWS::ApiGateway::UsagePlan');
+    expect(startAPIStack).toHaveResource('AWS::Lambda::Function');
+    expect(startAPIStack).toHaveResource('AWS::ApiGateway::RestApi');
 
     const startAPIStack_no_domain = new StartAPI.StartAPIStack(app, 'StartAPIStack-no-domain', {
-        discordAPISecrets: discordConfigStack.discordAPISecrets,
         env: testEnv
     });
+    expect(startAPIStack_no_domain).toHaveResource('AWS::SecretsManager::Secret');
     expect(startAPIStack_no_domain).toHaveResource('AWS::DynamoDB::Table');
     expect(startAPIStack_no_domain).toHaveResource('AWS::Lambda::Function');
     expect(startAPIStack_no_domain).toHaveResource('AWS::ApiGateway::RestApi');
     expect(startAPIStack_no_domain).toHaveResource('AWS::ApiGateway::UsagePlan');
-
-    const discordBotStack = new DiscordBot.DiscordBotStack(app, 'DiscordBotStack', {
-        discordAPISecrets: discordConfigStack.discordAPISecrets,
-        usersTable: startAPIStack.usersTable,
-        env: testEnv
-    });
-    expect(discordBotStack).toHaveResource('AWS::Lambda::Function');
-    expect(discordBotStack).toHaveResource('AWS::ApiGateway::RestApi');
+    expect(startAPIStack_no_domain).toHaveResource('AWS::Lambda::Function');
+    expect(startAPIStack_no_domain).toHaveResource('AWS::ApiGateway::RestApi');
 });

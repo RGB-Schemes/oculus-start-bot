@@ -1,6 +1,6 @@
 import {Context, Callback} from 'aws-lambda';
+import {DiscordEventRequest, DiscordResponseData} from 'discord-bot-cdk-construct';
 import {Embed} from 'slash-commands';
-import {DiscordEventRequest, DiscordResponseData} from '../types';
 import {ROLE_MAP, START_TRACKS} from './constants/DiscordServerProps';
 import {hasMemberRole, sendResponse} from './utils/Discord';
 import {isUserAuthorized, updateUser} from './utils/Users';

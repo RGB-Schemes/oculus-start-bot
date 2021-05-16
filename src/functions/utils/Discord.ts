@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DiscordEventResponse, DiscordMember, DiscordResponseData, DiscordRole } from '../../types';
+import { DiscordEventResponse, DiscordMember, DiscordResponseData, DiscordRole } from 'discord-bot-cdk-construct';
 import { getDiscordSecrets } from './DiscordSecrets';
 
 /**

@@ -2,7 +2,7 @@ import axios from 'axios';
 import {AWSError, DynamoDB, SecretsManager} from 'aws-sdk';
 import {BatchWriteItemInput, ScanInput, ScanOutput} from 'aws-sdk/clients/dynamodb';
 import * as Stacks from '../configs/outputs.json';
-import {DiscordMember, DiscordSecrets} from '../types';
+import {DiscordMember, DiscordSecrets} from 'discord-bot-cdk-construct';
 
 interface OlderUser {
   discordHandle: string;

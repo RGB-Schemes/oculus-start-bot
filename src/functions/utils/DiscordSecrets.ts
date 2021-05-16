@@ -1,5 +1,5 @@
 import { SecretsManager } from "aws-sdk";
-import { DiscordSecrets } from "../../types";
+import { DiscordSecrets } from "discord-bot-cdk-construct";
 import { discordBotAPIKeyName } from "../constants/EnvironmentProps";
 
 const secretsManager = new SecretsManager({
