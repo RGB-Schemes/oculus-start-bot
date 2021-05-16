@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { DiscordMember, DiscordRole } from '../../types';
+import { DiscordEventResponse, DiscordMember, DiscordResponseData, DiscordRole } from '../../types';
 import { getDiscordSecrets } from './DiscordSecrets';
 
 /**
@@ -31,6 +31,24 @@ export async function getDiscordMember(discordHandle: string): Promise<DiscordMe
   } catch(exception) {
     console.log(`There was an error finding this Discord member: ${exception}`);
     return undefined;
+  }
+}
+
+export async function sendResponse(response: DiscordResponseData,
+  interactionToken: string): Promise<boolean> {
+  const discordSecret = await getDiscordSecrets();
+  const authConfig = {
+    headers: {
+      'Authorization': `Bot ${discordSecret?.authToken}`
+    }
+  };
+
+  try {
+    let url = `https://discord.com/api/v8/webhooks/${discordSecret?.clientId}/${interactionToken}`;
+    return (await axios.post(url, response, authConfig)).status == 200;
+  } catch (exception) {
+    console.log(`There was an error posting a response: ${exception}`);
+    return false;
   }
 }
 

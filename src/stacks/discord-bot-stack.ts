@@ -3,8 +3,8 @@ import {Cors, LambdaIntegration, RequestValidator, RestApi} from '@aws-cdk/aws-a
 import {NodejsFunction} from '@aws-cdk/aws-lambda-nodejs';
 import {Construct, Duration, Stack, StackProps} from '@aws-cdk/core';
 import {Secret} from '@aws-cdk/aws-secretsmanager';
-import * as path from 'path';
 import {Table} from '@aws-cdk/aws-dynamodb';
+import * as path from 'path';
 
 export interface DiscordBotStackProps extends StackProps {
   usersTable: Table;
@@ -26,9 +26,9 @@ export class DiscordBotStack extends Stack {
     super(scope, id, props);
 
     // Create the Lambdas next.
-    const discordBotLambda = new NodejsFunction(this, 'discord-bot-lambda', {
+    const discordCommandsLambda = new NodejsFunction(this, 'discord-commands-lambda', {
       runtime: Runtime.NODEJS_14_X,
-      entry: path.join(__dirname, '../functions/DiscordBot.ts'),
+      entry: path.join(__dirname, '../functions/DiscordCommands.ts'),
       handler: 'handler',
       environment: {
         USERS_TABLE_NAME: props.usersTable.tableName,
@@ -36,8 +36,23 @@ export class DiscordBotStack extends Stack {
       },
       timeout: Duration.seconds(60),
     });
+    props.usersTable.grantReadWriteData(discordCommandsLambda);
+    props.discordAPISecrets.grantRead(discordCommandsLambda);
+
+    const discordBotLambda = new NodejsFunction(this, 'discord-bot-lambda', {
+      runtime: Runtime.NODEJS_14_X,
+      entry: path.join(__dirname, '../functions/DiscordBot.ts'),
+      handler: 'handler',
+      environment: {
+        USERS_TABLE_NAME: props.usersTable.tableName,
+        DISCORD_BOT_API_KEY_NAME: props.discordAPISecrets.secretName,
+        COMMAND_LAMBDA_ARN: discordCommandsLambda.functionArn,
+      },
+      timeout: Duration.seconds(3),
+    });
     props.usersTable.grantReadWriteData(discordBotLambda);
     props.discordAPISecrets.grantRead(discordBotLambda);
+    discordCommandsLambda.grantInvoke(discordBotLambda);
 
     // Create our API Gateway
     const discordBotAPI = new RestApi(this, 'discord-bot-api', {
@@ -65,6 +80,7 @@ export class DiscordBotStack extends Stack {
         'application/json': '{\r\n\
               "timestamp": "$input.params(\'x-signature-timestamp\')",\r\n\
               "signature": "$input.params(\'x-signature-ed25519\')",\r\n\
+              "jsonBodyString": "$util.escapeJavaScript($input.body).replace("\\\'", "\'")",\r\n\
               "jsonBody" : $input.json(\'$\')\r\n\
             }',
       },

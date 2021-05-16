@@ -40,9 +40,23 @@ jest.mock('../../src/functions/utils/Discord', () => {
     return {
         hasMemberRole: mockHasMemberRole
     }
-})
+});
+
+const mockInvoke = {
+    promise: jest.fn()
+};
+const mockLambda = {
+    invoke: jest.fn(() => mockInvoke)
+};
+
+jest.mock('aws-sdk', () => {
+    return {
+        Lambda: jest.fn(() => mockLambda)
+    };
+});
 
 import * as DiscordBot from '../../src/functions/DiscordBot';
+import { DiscordEventRequest } from '../../src/types';
 
 describe('Test DiscordBot', () => {
     afterEach(() => {
@@ -71,7 +85,7 @@ describe('Test DiscordBot', () => {
         }, (null as unknown) as Context, (null as unknown) as Callback);
 
         expect(result).toEqual({
-            type: 3,
+            type: 4,
             data: {
                 tts: false,
                 content: "beep boop - I\'m still learning how to respond to that command.",
@@ -99,13 +113,7 @@ describe('Test DiscordBot', () => {
         }, (null as unknown) as Context, (null as unknown) as Callback);
 
         expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: "Sorry, there is no member info with this request.",
-                embeds: [],
-                allowed_mentions: []
-            }
+            type: 5
         });
     });
 
@@ -124,10 +132,10 @@ describe('Test DiscordBot', () => {
                 type: 255,
                 version: 1
             }
-        } as unknown) as DiscordBot.DiscordEventRequest, (null as unknown) as Context, (null as unknown) as Callback);
+        } as unknown) as DiscordEventRequest, (null as unknown) as Context, (null as unknown) as Callback);
 
         expect(result).toEqual({
-            type: 3,
+            type: 4,
             data: {
                 tts: false,
                 content: "beep boop - I\'m still learning how to respond to that command.",
@@ -264,350 +272,5 @@ describe('Test DiscordBot', () => {
         expect(mockDiscordSecrets).toBeCalledTimes(1);
         expect(mockVerify).toBeCalledTimes(1);
         expect(result).toEqual(false);
-    });
-
-    test('Test Command - No Member Failure', async () => {
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'hello-world',
-                    id: '0'
-                },
-                member: undefined,
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `Sorry, there is no member info with this request.`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockIsUserAuthorized).toBeCalledTimes(0);
-    });
-
-    test('Test Command - Invalid Command Failure', async () => {
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'invalid-command',
-                    id: '0'
-                },
-                member: {
-                    roles: [],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: 'Hey, that\'s a new command!',
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockIsUserAuthorized).toBeCalledTimes(0);
-    });
-
-    test('Test Command - No JSON Body Data Failure', async () => {
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: undefined,
-                member: {
-                    roles: [],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: 'Hey, that\'s a new command!',
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockIsUserAuthorized).toBeCalledTimes(0);
-    });
-
-    test('Test Command - hello-world - Success', async () => {
-        mockIsUserAuthorized.mockReturnValueOnce(true);
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'hello-world',
-                    id: '0'
-                },
-                member: {
-                    roles: [],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `Hello Test!`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockIsUserAuthorized).toBeCalledTimes(1);
-    });
-
-    test('Test Command - hello-world - Failure', async () => {
-        mockIsUserAuthorized.mockReturnValueOnce(false);
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'hello-world',
-                    id: '0'
-                },
-                member: {
-                    roles: [],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `You are not authorized for that command Test.`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockIsUserAuthorized).toBeCalledTimes(1);
-    });
-
-    test('Test Command - verify - Success', async () => {
-        mockIsUserAuthorized.mockReturnValueOnce(true);
-        mockHasMemberRole.mockReturnValueOnce(true);
-        mockUpdateUser.mockReturnValue(true);
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'verify',
-                    id: '0',
-                    options: [
-                        {
-                            name: 'oculus_handle',
-                            value: 'Test'
-                        }
-                    ]
-                },
-                member: {
-                    roles: ['5'],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `You have been verified! You can now use the bot commands!`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockHasMemberRole).toBeCalledTimes(1);
-        expect(mockUpdateUser).toBeCalledTimes(1);
-    });
-
-    test('Test Command - verify - Next Role Success', async () => {
-        mockIsUserAuthorized.mockReturnValueOnce(true);
-        mockHasMemberRole.mockReturnValueOnce(false).mockReturnValueOnce(true);
-        mockUpdateUser.mockReturnValue(true);
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'verify',
-                    id: '0',
-                    options: [
-                        {
-                            name: 'oculus_handle',
-                            value: 'Test'
-                        }
-                    ]
-                },
-                member: {
-                    roles: ['5'],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `You have been verified! You can now use the bot commands!`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockHasMemberRole).toBeCalledTimes(2);
-        expect(mockUpdateUser).toBeCalledTimes(1);
-    });
-
-    test('Test Command - verify - Update User Failure', async () => {
-        mockIsUserAuthorized.mockReturnValueOnce(true);
-        mockHasMemberRole.mockReturnValueOnce(true);
-        mockUpdateUser.mockReturnValue(false);
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'verify',
-                    id: '0',
-                    options: [
-                        {
-                            name: 'oculus_handle',
-                            value: 'Test'
-                        }
-                    ]
-                },
-                member: {
-                    roles: ['5'],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `There was a problem verifying you!`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockHasMemberRole).toBeCalledTimes(1);
-        expect(mockUpdateUser).toBeCalledTimes(1);
-    });
-
-    test('Test Command - verify - Update User Failure', async () => {
-        mockIsUserAuthorized.mockReturnValueOnce(true);
-        mockUpdateUser.mockReturnValue(true);
-        const result = await DiscordBot.handleCommand({
-            timestamp: '',
-            signature: '',
-            jsonBody: {
-                data: {
-                    name: 'verify',
-                    id: '0',
-                    options: [
-                        {
-                            name: 'oculus_handle',
-                            value: 'Test'
-                        }
-                    ]
-                },
-                member: {
-                    roles: ['5'],
-                    deaf: false,
-                    user: {
-                        id: 1,
-                        username: 'Test',
-                        discriminator: '0001'
-                    }
-                },
-                type: 2,
-                version: 1
-            }
-        });
-
-        expect(result).toEqual({
-            type: 3,
-            data: {
-                tts: false,
-                content: `You do not have an Oculus Start role assigned!`,
-                embeds: [],
-                allowed_mentions: [],
-            },
-        });
-        expect(mockHasMemberRole).toBeCalledTimes(3);
-        expect(mockUpdateUser).toBeCalledTimes(0);
     });
 });

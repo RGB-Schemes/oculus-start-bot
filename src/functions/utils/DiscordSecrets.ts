@@ -2,7 +2,9 @@ import { SecretsManager } from "aws-sdk";
 import { DiscordSecrets } from "../../types";
 import { discordBotAPIKeyName } from "../constants/EnvironmentProps";
 
-const secretsManager = new SecretsManager();
+const secretsManager = new SecretsManager({
+  
+});
 let __discordSecrets: DiscordSecrets | undefined = undefined;
 
 /**

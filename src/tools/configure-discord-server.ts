@@ -35,7 +35,7 @@ secretsManager.getSecretValue({
     try {
       const discordSecrets: DiscordSecrets = JSON.parse(data.SecretString);
       const interaction = new DiscordInteractions({
-        applicationId: discordSecrets.appId,
+        applicationId: discordSecrets.clientId,
         authToken: discordSecrets.authToken,
         publicKey: discordSecrets.publicKey,
       });
